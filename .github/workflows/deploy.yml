@@ -1,0 +1,90 @@
+# Публикация MemoCards:
+#   • checks   — lint + тесты;
+#   • supabase — миграции БД, Edge Functions и их секреты (если задана переменная SUPABASE_PROJECT_REF);
+#   • pages    — сборка мини-приложения и деплой на GitHub Pages.
+#
+# Repository variables (Settings → Secrets and variables → Actions → Variables):
+#   SUPABASE_PROJECT_REF   — ref проекта Supabase (часть URL https://<ref>.supabase.co)
+#   WEB_APP_URL            — публичный адрес мини-приложения, например https://<user>.github.io/<repo>/
+# Repository secrets:
+#   SUPABASE_ACCESS_TOKEN  — personal access token Supabase (sbp_…)
+#   SUPABASE_DB_PASSWORD   — пароль базы данных проекта
+#   TELEGRAM_BOT_TOKEN     — токен бота от @BotFather
+#   TELEGRAM_WEBHOOK_SECRET — произвольная строка для подписи вебхука
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn nx run-many -t lint test --skip-nx-cache
+        env:
+          NX_DAEMON: 'false'
+
+  supabase:
+    needs: checks
+    if: ${{ vars.SUPABASE_PROJECT_REF != '' }}
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase link --project-ref "${{ vars.SUPABASE_PROJECT_REF }}"
+      - run: supabase db push
+      - run: supabase config push
+      - run: supabase functions deploy
+      - name: Set Edge Function secrets
+        run: |
+          supabase secrets set \
+            TELEGRAM_BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}" \
+            TELEGRAM_WEBHOOK_SECRET="${{ secrets.TELEGRAM_WEBHOOK_SECRET }}" \
+            WEB_APP_URL="${{ vars.WEB_APP_URL }}"
+
+  pages:
+    needs: checks
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - name: Build mini-app
+        run: yarn nx build mini-app --base-href "/${{ github.event.repository.name }}/" --skip-nx-cache
+        env:
+          NX_DAEMON: 'false'
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/apps/mini-app/browser
+      - id: deployment
+        uses: actions/deploy-pages@v4

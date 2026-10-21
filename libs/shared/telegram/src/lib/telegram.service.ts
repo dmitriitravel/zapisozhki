@@ -9,6 +9,11 @@ import {
 } from './interfaces';
 
 const LOCAL_CLOUD_PREFIX = 'memo-cloud:';
+/**
+ * Вне Telegram initData можно подложить через localStorage — для отладки
+ * облачной синхронизации в обычном браузере (строка должна быть подписана токеном бота).
+ */
+const DEV_INIT_DATA_KEY = 'memo-dev-init-data';
 
 /**
  * Обёртка над Telegram WebApp SDK.
@@ -37,7 +42,10 @@ export class TelegramService {
   }
 
   getInitData(): string {
-    return this.webApp?.initData ?? '';
+    if (this.webApp) {
+      return this.webApp.initData;
+    }
+    return this.document.defaultView?.localStorage.getItem(DEV_INIT_DATA_KEY) ?? '';
   }
 
   getColorScheme(): TelegramColorScheme {

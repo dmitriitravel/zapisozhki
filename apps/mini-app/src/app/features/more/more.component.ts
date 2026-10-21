@@ -11,6 +11,8 @@ import {
 } from '@angular/core';
 import { TelegramService } from '@memo/shared/telegram';
 import { BackupService } from '../../core/backup/backup.service';
+import { SyncService } from '../../core/cloud/sync.service';
+import { SyncStatus } from '../../core/cloud/interfaces';
 import { AppSettings, BackupSummary, StudyStats } from '../../core/models/interfaces';
 import { ProfileService } from '../../core/profile/profile.service';
 import {
@@ -23,9 +25,10 @@ import { SpeechService } from '../../core/speech/speech.service';
 import { StatsService } from '../../core/stats/stats.service';
 import { MemoStore } from '../../core/store/memo-store.service';
 import { ToastService } from '../../core/toast/toast.service';
-import { formatCount, formatDate } from '../../core/utils/format';
+import { formatCount, formatDate, formatTime } from '../../core/utils/format';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
+import { IconName } from '../../ui/icon/icons';
 import { PageHeaderComponent } from '../../ui/page-header/page-header.component';
 import { ActivityChartComponent } from './activity-chart/activity-chart.component';
 import {
@@ -34,6 +37,7 @@ import {
   NEW_CARDS_PER_DAY_MIN,
   NEW_CARDS_PER_DAY_STEP,
   SPEECH_TEST_PHRASE,
+  SyncPresentation,
   USER_NAME_MAX_LENGTH,
 } from './interfaces';
 import { RetentionChartsComponent } from './retention-charts/retention-charts.component';
@@ -60,6 +64,7 @@ export class MoreComponent implements OnInit {
   private readonly backup = inject(BackupService);
   private readonly profile = inject(ProfileService);
   private readonly speech = inject(SpeechService);
+  private readonly sync = inject(SyncService);
   private readonly telegram = inject(TelegramService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -94,6 +99,9 @@ export class MoreComponent implements OnInit {
   readonly canIncrease = computed(
     () => this.store.settings().newCardsPerDay < NEW_CARDS_PER_DAY_MAX
   );
+  readonly isCloudSyncAvailable = this.sync.isAvailable();
+  readonly syncStatus = this.sync.status;
+  readonly syncView = computed((): SyncPresentation => describeSync(this.sync.status()));
 
   constructor() {
     this.destroyRef.onDestroy(() => {
@@ -138,6 +146,18 @@ export class MoreComponent implements OnInit {
 
   testSpeech(): void {
     this.speech.toggle(SPEECH_TEST_PHRASE);
+  }
+
+  async syncNow(): Promise<void> {
+    this.telegram.hapticSelection();
+    await this.sync.syncNow();
+    const status = this.sync.status();
+    if (status.state === 'idle') {
+      this.toast.success('Данные синхронизированы');
+      await this.refreshStats();
+    } else if (status.state === 'error') {
+      this.toast.error(status.message);
+    }
   }
 
   /** Имя сохраняем с небольшой задержкой, чтобы не писать в базу на каждую букву. */
@@ -249,5 +269,39 @@ export class MoreComponent implements OnInit {
     } catch {
       this.cloudSummaryState.set(null);
     }
+  }
+}
+
+function describeSync(status: SyncStatus): SyncPresentation {
+  const pending =
+    status.pendingCount > 0
+      ? ` · в очереди ${formatCount(status.pendingCount, ['изменение', 'изменения', 'изменений'])}`
+      : '';
+  const icon: IconName =
+    status.state === 'idle'
+      ? 'cloud-check'
+      : status.state === 'error' || status.state === 'offline'
+        ? 'cloud-off'
+        : 'cloud';
+  switch (status.state) {
+    case 'disabled':
+      return { icon, title: 'Облако отключено', subtitle: status.message, tone: 'muted' };
+    case 'unauthenticated':
+      return { icon, title: 'Нет входа', subtitle: status.message, tone: 'muted' };
+    case 'syncing':
+      return { icon, title: 'Синхронизация…', subtitle: 'Сверяем данные с облаком', tone: 'accent' };
+    case 'offline':
+      return { icon, title: 'Нет сети', subtitle: `${status.message}${pending}`, tone: 'warning' };
+    case 'error':
+      return { icon, title: 'Ошибка синхронизации', subtitle: `${status.message}${pending}`, tone: 'danger' };
+    case 'idle':
+      return {
+        icon,
+        title: 'Данные в облаке',
+        subtitle: status.lastSyncAt
+          ? `Синхронизировано в ${formatTime(status.lastSyncAt)}${pending}`
+          : 'Готово к синхронизации',
+        tone: 'success',
+      };
   }
 }

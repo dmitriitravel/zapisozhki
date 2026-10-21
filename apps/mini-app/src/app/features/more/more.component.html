@@ -140,6 +140,41 @@
   </div>
 
   <div class="memo-section">
+    <div class="memo-section__title">Облако</div>
+    @if (syncView(); as view) {
+      <button
+        type="button"
+        class="memo-row"
+        [class.memo-row--static]="!isCloudSyncAvailable"
+        [disabled]="!isCloudSyncAvailable || syncStatus().state === 'syncing'"
+        (click)="syncNow()"
+      >
+        <memo-icon [name]="view.icon" [size]="22" [class]="'row-icon sync-icon sync-icon--' + view.tone" />
+        <div class="memo-row__body">
+          <div class="memo-row__title">{{ view.title }}</div>
+          <div class="memo-row__subtitle">{{ view.subtitle }}</div>
+        </div>
+        @if (syncStatus().state === 'syncing') {
+          <span class="memo-spinner row-spinner"></span>
+        } @else if (isCloudSyncAvailable) {
+          <memo-icon name="refresh-cw" [size]="18" class="memo-hint" />
+        }
+      </button>
+    }
+    @if (!isCloudSyncAvailable) {
+      <div class="memo-row memo-row--static">
+        <memo-icon name="info" [size]="22" class="row-icon" />
+        <div class="memo-row__body">
+          <div class="memo-row__subtitle">
+            Откройте приложение в Telegram — колоды, карточки и прогресс будут храниться
+            в облаке и появятся на всех ваших устройствах.
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="memo-section">
     <div class="memo-section__title">Резервные копии</div>
     @if (isCloudAvailable) {
       <button type="button" class="memo-row" [disabled]="isBusy()" (click)="saveToCloud()">
@@ -199,11 +234,12 @@
       <div class="memo-row__body">
         <div class="memo-row__title">MemoCards</div>
         <div class="memo-row__subtitle">
-          Карточки с интервальным повторением (алгоритм SM-2). Данные хранятся на этом устройстве
-          @if (isInsideTelegram) {
-            внутри Telegram
+          Карточки с интервальным повторением (алгоритм SM-2).
+          @if (isCloudSyncAvailable) {
+            Данные хранятся в облаке и кэшируются на устройстве.
+          } @else {
+            Данные хранятся на этом устройстве — делайте резервные копии.
           }
-          — делайте резервные копии.
         </div>
       </div>
     </div>

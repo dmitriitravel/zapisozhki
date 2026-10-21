@@ -26,7 +26,12 @@ node_modules
 
 # secrets
 .env
-.env.local
+.env.*
+!.env.example
+
+# supabase local state
+supabase/.branches
+supabase/.temp
 
 # misc
 /.sass-cache

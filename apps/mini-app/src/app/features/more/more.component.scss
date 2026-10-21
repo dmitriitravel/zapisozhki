@@ -147,6 +147,22 @@
   color: var(--memo-accent);
 }
 
+.sync-icon--muted {
+  color: var(--memo-hint);
+}
+
+.sync-icon--success {
+  color: var(--memo-success);
+}
+
+.sync-icon--warning {
+  color: var(--memo-warning);
+}
+
+.sync-icon--danger {
+  color: var(--memo-destructive);
+}
+
 .row-spinner {
   width: 18px;
   height: 18px;

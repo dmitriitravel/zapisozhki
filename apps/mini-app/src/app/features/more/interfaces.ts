@@ -1,3 +1,5 @@
+import { IconName } from '../../ui/icon/icons';
+
 export const NEW_CARDS_PER_DAY_MIN = 0;
 export const NEW_CARDS_PER_DAY_MAX = 200;
 export const NEW_CARDS_PER_DAY_STEP = 5;
@@ -9,6 +11,16 @@ export const SPEECH_TEST_PHRASE = 'Staying in that fancy hotel costs an arm and 
 export type BackupOperation = 'cloud-save' | 'cloud-restore' | 'export' | 'import' | null;
 
 export type StatTileTone = 'accent' | 'success' | 'warning' | 'info';
+
+export type SyncTone = 'muted' | 'accent' | 'success' | 'warning' | 'danger';
+
+/** Как показать состояние облачной синхронизации в строке настроек. */
+export interface SyncPresentation {
+  readonly icon: IconName;
+  readonly title: string;
+  readonly subtitle: string;
+  readonly tone: SyncTone;
+}
 
 /** Столбик графика активности. */
 export interface ActivityBar {

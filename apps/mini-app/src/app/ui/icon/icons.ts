@@ -42,7 +42,10 @@ export type IconName =
   | 'refresh-cw'
   | 'folder'
   | 'user'
-  | 'activity';
+  | 'activity'
+  | 'cloud'
+  | 'cloud-off'
+  | 'cloud-check';
 
 /** SVG-контуры в стиле Lucide (viewBox 0 0 24 24, stroke 2). */
 export const ICON_PATHS: Readonly<Record<IconName, string>> = {
@@ -114,4 +117,9 @@ export const ICON_PATHS: Readonly<Record<IconName, string>> = {
     '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
   user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  cloud: '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>',
+  'cloud-off':
+    '<path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/>',
+  'cloud-check':
+    '<path d="m17 15-5.5 5.5L9 18"/><path d="M5 17.743A7 7 0 1 1 15.71 10h1.79a4.5 4.5 0 0 1 1.5 8.742"/>',
 };

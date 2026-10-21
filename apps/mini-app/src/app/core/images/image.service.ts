@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { SyncService } from '../cloud/sync.service';
 import { MemoRepository } from '../db/memo-repository.service';
 import { ProcessedImage, StoredImage } from '../models/interfaces';
 import { createId } from '../utils/id';
@@ -16,6 +17,7 @@ const CACHE_LIMIT = 30;
 @Injectable({ providedIn: 'root' })
 export class ImageService {
   private readonly repository = inject(MemoRepository);
+  private readonly sync = inject(SyncService);
   private readonly cache = new Map<string, string>();
 
   async processFile(file: File): Promise<ProcessedImage> {
@@ -53,7 +55,9 @@ export class ImageService {
     if (cached) {
       return cached;
     }
-    const image = await this.repository.getImage(imageId);
+    // Локально нет (карточка пришла с другого устройства) — пробуем скачать из облака.
+    const image =
+      (await this.repository.getImage(imageId)) ?? (await this.sync.downloadImage(imageId));
     if (!image) {
       return null;
     }

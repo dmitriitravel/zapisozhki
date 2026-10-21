@@ -72,6 +72,48 @@ export interface SettingsRecord {
   readonly value: AppSettings;
 }
 
+/**
+ * Запись исходящей очереди синхронизации: что изменилось локально и ещё не отправлено
+ * в облако. Пишется в той же транзакции IndexedDB, что и само изменение.
+ */
+export type OutboxEntry =
+  | { readonly kind: 'upsert-deck'; readonly deck: Deck }
+  | { readonly kind: 'upsert-cards'; readonly cards: readonly Card[] }
+  | { readonly kind: 'delete-deck'; readonly deckId: string; readonly imageIds: readonly string[]; readonly deletedAt: number }
+  | { readonly kind: 'delete-card'; readonly cardId: string; readonly imageId: string | null; readonly deletedAt: number }
+  | { readonly kind: 'upsert-image'; readonly imageId: string }
+  | { readonly kind: 'delete-image'; readonly imageId: string }
+  | { readonly kind: 'add-review'; readonly entry: ReviewLogEntry }
+  | { readonly kind: 'clear-reviews'; readonly cardId: string }
+  | { readonly kind: 'settings'; readonly settings: AppSettings; readonly updatedAt: number }
+  /** Отправить в облако полный снимок локальной базы (первая синхронизация устройства). */
+  | { readonly kind: 'snapshot' }
+  /** Полностью заменить данные в облаке локальными (восстановление из резервной копии). */
+  | { readonly kind: 'replace-all' };
+
+export interface OutboxRecord {
+  /** Автоинкрементный ключ — порядок операций. */
+  readonly seq: number;
+  readonly entry: OutboxEntry;
+  readonly createdAt: number;
+}
+
+/** Служебные значения (состояние синхронизации и т. п.). */
+export interface MetaRecord {
+  readonly key: string;
+  readonly value: string | number | boolean | null;
+}
+
+/** Полный снимок локальной базы для отправки в облако. */
+export interface LocalSnapshot {
+  readonly decks: readonly Deck[];
+  readonly cards: readonly Card[];
+  readonly imageIds: readonly string[];
+  readonly reviewLog: readonly ReviewLogEntry[];
+  readonly settings: AppSettings;
+  readonly settingsUpdatedAt: number;
+}
+
 export interface DeckStats {
   readonly deckId: string;
   readonly total: number;

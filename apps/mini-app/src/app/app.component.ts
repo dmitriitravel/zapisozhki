@@ -10,6 +10,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { TelegramService } from '@memo/shared/telegram';
 import { filter } from 'rxjs';
+import { SyncService } from './core/cloud/sync.service';
 import { MemoStore } from './core/store/memo-store.service';
 import { TabBarComponent } from './ui/tab-bar/tab-bar.component';
 import { ToastComponent } from './ui/toast/toast.component';
@@ -37,6 +38,7 @@ export class AppComponent {
   readonly store = inject(MemoStore);
 
   private readonly telegram = inject(TelegramService);
+  private readonly sync = inject(SyncService);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly destroyRef = inject(DestroyRef);
@@ -46,7 +48,8 @@ export class AppComponent {
 
   constructor() {
     this.telegram.init();
-    void this.store.load();
+    // Сначала показываем локальные данные, затем в фоне сверяемся с облаком.
+    void this.store.load().then(() => this.sync.start());
 
     this.router.events
       .pipe(
