@@ -1,0 +1,36 @@
+.preview {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 16px;
+}
+
+.preview__emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 24px;
+  background: var(--memo-section-bg);
+  font-size: 48px;
+}
+
+.emojis {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.emojis__item {
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: var(--memo-section-bg);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.emojis__item--active {
+  border-color: var(--memo-accent);
+}

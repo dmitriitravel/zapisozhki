@@ -14,7 +14,12 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@memo/shared/spaced-repetition": [
+        "libs/shared/spaced-repetition/src/index.ts"
+      ],
+      "@memo/shared/telegram": ["libs/shared/telegram/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

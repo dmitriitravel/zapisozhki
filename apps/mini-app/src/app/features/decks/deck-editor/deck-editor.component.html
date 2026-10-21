@@ -1,0 +1,56 @@
+<memo-page-header [title]="isEdit() ? 'Редактировать колоду' : 'Новая колода'">
+  <button left type="button" class="memo-icon-btn" aria-label="Назад" (click)="cancel()">
+    <memo-icon name="chevron-left" [size]="26" />
+  </button>
+  <button right type="button" class="memo-btn memo-btn--ghost memo-btn--small" [disabled]="!canSave()" (click)="save()">
+    Готово
+  </button>
+</memo-page-header>
+
+<form class="memo-page memo-page--no-tabs" (submit)="$event.preventDefault(); save()">
+  <div class="preview">
+    <span class="preview__emoji">{{ form().emoji }}</span>
+  </div>
+
+  <div class="emojis">
+    @for (emoji of emojis; track emoji) {
+      <button
+        type="button"
+        class="emojis__item"
+        [class.emojis__item--active]="emoji === form().emoji"
+        (click)="setEmoji(emoji)"
+      >
+        {{ emoji }}
+      </button>
+    }
+  </div>
+
+  <label class="memo-field">
+    <span class="memo-label">Название</span>
+    <input
+      class="memo-input"
+      type="text"
+      placeholder="Например, «Столицы мира»"
+      maxlength="80"
+      autocomplete="off"
+      [value]="form().title"
+      (input)="setTitle($any($event.target).value)"
+    />
+  </label>
+
+  <label class="memo-field">
+    <span class="memo-label">Описание</span>
+    <textarea
+      class="memo-textarea"
+      placeholder="О чём эта колода (необязательно)"
+      maxlength="300"
+      rows="3"
+      [value]="form().description"
+      (input)="setDescription($any($event.target).value)"
+    ></textarea>
+  </label>
+
+  <button type="submit" class="memo-btn memo-btn--primary memo-btn--block" [disabled]="!canSave()">
+    {{ isEdit() ? 'Сохранить' : 'Создать колоду' }}
+  </button>
+</form>

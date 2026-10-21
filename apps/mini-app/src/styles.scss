@@ -1,1 +1,361 @@
-/* You can add global styles to this file, and also import other style files */
+/*
+ * Глобальные стили мини-приложения.
+ * Цвета берутся из темы Telegram (--tg-theme-*), вне Telegram используются fallback-значения
+ * в тёплой палитре, близкой к оригинальному MemoDremo.
+ */
+:root {
+  --memo-bg: var(--tg-theme-bg-color, #faf1ea);
+  --memo-secondary-bg: var(--tg-theme-secondary-bg-color, #f1e5db);
+  --memo-section-bg: var(--tg-theme-section-bg-color, #ffffff);
+  --memo-text: var(--tg-theme-text-color, #1e1b18);
+  --memo-hint: var(--tg-theme-hint-color, #8d8580);
+  --memo-link: var(--tg-theme-link-color, #d9822b);
+  --memo-accent: var(--tg-theme-accent-text-color, #e08a2e);
+  --memo-button: var(--tg-theme-button-color, #e08a2e);
+  --memo-button-text: var(--tg-theme-button-text-color, #ffffff);
+  --memo-destructive: var(--tg-theme-destructive-text-color, #d64541);
+  --memo-divider: rgba(128, 128, 128, 0.18);
+  --memo-success: #2f9e63;
+  --memo-warning: #d99a2b;
+
+  --memo-radius: 16px;
+  --memo-tab-bar-height: 60px;
+  --memo-safe-top: var(--tg-content-safe-area-inset-top, 0px);
+  --memo-safe-bottom: var(
+    --tg-safe-area-inset-bottom,
+    env(safe-area-inset-bottom, 0px)
+  );
+}
+
+:root[data-color-scheme='dark'] {
+  --memo-bg: var(--tg-theme-bg-color, #1c1a18);
+  --memo-secondary-bg: var(--tg-theme-secondary-bg-color, #2a2724);
+  --memo-section-bg: var(--tg-theme-section-bg-color, #26231f);
+  --memo-text: var(--tg-theme-text-color, #f3ede7);
+  --memo-hint: var(--tg-theme-hint-color, #9a918a);
+  --memo-divider: rgba(255, 255, 255, 0.1);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.35;
+  background: var(--memo-bg);
+  color: var(--memo-text);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--memo-link);
+}
+
+/* Страница с отступом под таб-бар */
+.memo-page {
+  padding: 0 16px calc(var(--memo-tab-bar-height) + var(--memo-safe-bottom) + 24px);
+}
+
+.memo-page--no-tabs {
+  padding-bottom: calc(var(--memo-safe-bottom) + 24px);
+}
+
+/* Кнопки */
+.memo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.1s,
+    opacity 0.15s;
+  user-select: none;
+}
+
+.memo-btn:active {
+  transform: scale(0.98);
+}
+
+.memo-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
+.memo-btn--primary {
+  background: var(--memo-button);
+  color: var(--memo-button-text);
+}
+
+.memo-btn--secondary {
+  background: var(--memo-secondary-bg);
+  color: var(--memo-text);
+}
+
+.memo-btn--ghost {
+  background: transparent;
+  color: var(--memo-link);
+}
+
+.memo-btn--danger {
+  background: transparent;
+  color: var(--memo-destructive);
+}
+
+.memo-btn--block {
+  width: 100%;
+}
+
+.memo-btn--small {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+.memo-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--memo-text);
+  cursor: pointer;
+}
+
+.memo-icon-btn:active {
+  background: var(--memo-secondary-bg);
+}
+
+.memo-icon-btn--filled {
+  background: var(--memo-text);
+  color: var(--memo-bg);
+}
+
+.memo-icon-btn--filled:active {
+  opacity: 0.8;
+  background: var(--memo-text);
+}
+
+/* Поля ввода */
+.memo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.memo-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--memo-hint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.memo-input,
+.memo-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--memo-section-bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.memo-input:focus,
+.memo-textarea:focus {
+  border-color: var(--memo-accent);
+}
+
+.memo-textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+/* Группы-списки */
+.memo-section {
+  background: var(--memo-section-bg);
+  border-radius: var(--memo-radius);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.memo-section__title {
+  padding: 16px 16px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--memo-hint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.memo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.memo-row + .memo-row {
+  border-top: 1px solid var(--memo-divider);
+}
+
+.memo-row:active {
+  background: var(--memo-secondary-bg);
+}
+
+.memo-row--static {
+  cursor: default;
+}
+
+.memo-row--static:active {
+  background: transparent;
+}
+
+.memo-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.memo-row__title {
+  font-size: 16px;
+}
+
+.memo-row__subtitle {
+  font-size: 13px;
+  color: var(--memo-hint);
+  margin-top: 2px;
+}
+
+.memo-row__value {
+  color: var(--memo-hint);
+  font-size: 15px;
+}
+
+.memo-hint {
+  color: var(--memo-hint);
+  font-size: 14px;
+}
+
+.memo-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--memo-secondary-bg);
+  color: var(--memo-hint);
+}
+
+.memo-badge--accent {
+  background: color-mix(in srgb, var(--memo-accent) 18%, transparent);
+  color: var(--memo-accent);
+}
+
+.memo-badge--success {
+  background: color-mix(in srgb, var(--memo-success) 18%, transparent);
+  color: var(--memo-success);
+}
+
+.memo-badge--warning {
+  background: color-mix(in srgb, var(--memo-warning) 20%, transparent);
+  color: var(--memo-warning);
+}
+
+/* Переключатель */
+.memo-switch {
+  position: relative;
+  width: 50px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--memo-divider);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.memo-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
+}
+
+.memo-switch--on {
+  background: var(--memo-button);
+}
+
+.memo-switch--on::after {
+  transform: translateX(20px);
+}
+
+.memo-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--memo-divider);
+  border-top-color: var(--memo-accent);
+  border-radius: 50%;
+  animation: memo-spin 0.8s linear infinite;
+}
+
+@keyframes memo-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.memo-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}

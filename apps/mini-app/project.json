@@ -16,7 +16,7 @@
         "polyfills": ["zone.js"],
         "tsConfig": "apps/mini-app/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
-        "assets": ["apps/mini-app/src/favicon.ico", "apps/mini-app/src/assets"],
+        "assets": ["apps/mini-app/src/favicon.svg", "apps/mini-app/src/assets"],
         "styles": ["apps/mini-app/src/styles.scss"],
         "scripts": []
       },
@@ -30,8 +30,8 @@
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "2kb",
-              "maximumError": "4kb"
+              "maximumWarning": "8kb",
+              "maximumError": "16kb"
             }
           ],
           "outputHashing": "all"

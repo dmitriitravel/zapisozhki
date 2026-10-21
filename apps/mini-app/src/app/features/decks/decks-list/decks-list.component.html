@@ -1,0 +1,52 @@
+<memo-page-header title="Колоды">
+  <a right routerLink="/decks/new" class="memo-icon-btn memo-icon-btn--filled" aria-label="Создать колоду">
+    <memo-icon name="plus" [size]="24" />
+  </a>
+</memo-page-header>
+
+<div class="memo-page">
+  @if (items().length === 0) {
+    <memo-empty-state title="Пока нет колод">
+      <span class="hint">
+        Нажмите
+        <span class="hint__icon"><memo-icon name="landmark" [size]="22" /></span>
+        чтобы добавить колоду из библиотеки
+      </span>
+      <span class="hint">
+        Нажмите
+        <span class="hint__icon hint__icon--filled"><memo-icon name="plus" [size]="18" /></span>
+        чтобы создать свою колоду
+      </span>
+    </memo-empty-state>
+    <a routerLink="/library" class="memo-btn memo-btn--secondary memo-btn--block">
+      Открыть библиотеку
+    </a>
+  } @else {
+    <div class="decks">
+      @for (item of items(); track item.deck.id) {
+        <button type="button" class="deck" [class.deck--inactive]="!item.deck.isActive" (click)="openDeck(item.deck.id)">
+          <span class="deck__emoji">{{ item.deck.emoji }}</span>
+          <span class="deck__body">
+            <span class="deck__title">{{ item.deck.title }}</span>
+            <span class="deck__meta">{{ formatTotal(item.stats.total) }}</span>
+            <span class="deck__badges">
+              @if (item.stats.dueCount > 0) {
+                <span class="memo-badge memo-badge--warning">{{ item.stats.dueCount }} повторить</span>
+              }
+              @if (item.stats.newCount > 0) {
+                <span class="memo-badge memo-badge--accent">{{ item.stats.newCount }} новых</span>
+              }
+              @if (item.stats.learnedCount > 0) {
+                <span class="memo-badge memo-badge--success">{{ item.stats.learnedCount }} выучено</span>
+              }
+              @if (!item.deck.isActive) {
+                <span class="memo-badge">на паузе</span>
+              }
+            </span>
+          </span>
+          <memo-icon name="chevron-right" [size]="20" class="deck__chevron" />
+        </button>
+      }
+    </div>
+  }
+</div>

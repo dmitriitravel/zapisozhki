@@ -1,14 +1,70 @@
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { NxWelcomeComponent } from './nx-welcome.component';
+import { Location } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { TelegramService } from '@memo/shared/telegram';
+import { filter } from 'rxjs';
+import { MemoStore } from './core/store/memo-store.service';
+import { TabBarComponent } from './ui/tab-bar/tab-bar.component';
+import { ToastComponent } from './ui/toast/toast.component';
+
+const ROOT_TABS: readonly string[] = ['/drilling', '/decks', '/library', '/more'];
 
 @Component({
-  standalone: true,
-  imports: [NxWelcomeComponent, RouterModule],
   selector: 'memo-root',
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+  standalone: true,
+  imports: [RouterOutlet, TabBarComponent, ToastComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    @if (store.isLoaded()) {
+      <router-outlet />
+      @if (showTabBar()) {
+        <memo-tab-bar />
+      }
+    } @else {
+      <div class="memo-loading"><div class="memo-spinner"></div></div>
+    }
+    <memo-toast />
+  `,
 })
 export class AppComponent {
-  title = 'mini-app';
+  readonly store = inject(MemoStore);
+
+  private readonly telegram = inject(TelegramService);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly showTabBarState = signal(true);
+
+  readonly showTabBar = this.showTabBarState.asReadonly();
+
+  constructor() {
+    this.telegram.init();
+    void this.store.load();
+
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((event) => this.onNavigated(event.urlAfterRedirects));
+  }
+
+  private onNavigated(url: string): void {
+    const path = url.split('?')[0];
+    const isRoot = ROOT_TABS.includes(path);
+    this.showTabBarState.set(isRoot);
+
+    if (isRoot) {
+      this.telegram.hideBackButton();
+    } else {
+      this.telegram.showBackButton(() => this.location.back());
+    }
+  }
 }

@@ -1,0 +1,95 @@
+@if (deck(); as deck) {
+  <memo-page-header [title]="deck.title">
+    <button left type="button" class="memo-icon-btn" aria-label="Назад" (click)="back()">
+      <memo-icon name="chevron-left" [size]="26" />
+    </button>
+    <button right type="button" class="memo-icon-btn" aria-label="Меню колоды" (click)="openDeckMenu()">
+      <memo-icon name="more-horizontal" [size]="24" />
+    </button>
+    <a right [routerLink]="['/decks', deck.id, 'cards', 'new']" class="memo-icon-btn memo-icon-btn--filled" aria-label="Добавить карточку">
+      <memo-icon name="plus" [size]="24" />
+    </a>
+  </memo-page-header>
+
+  <div class="memo-page memo-page--no-tabs page">
+    <div class="summary">
+      <span class="summary__emoji">{{ deck.emoji }}</span>
+      <div class="summary__body">
+        @if (deck.description) {
+          <p class="summary__description">{{ deck.description }}</p>
+        }
+        <div class="summary__stats">
+          <span class="memo-badge">{{ formatCards(stats().total) }}</span>
+          @if (stats().newCount > 0) {
+            <span class="memo-badge memo-badge--accent">{{ stats().newCount }} новых</span>
+          }
+          @if (stats().dueCount > 0) {
+            <span class="memo-badge memo-badge--warning">{{ stats().dueCount }} повторить</span>
+          }
+          @if (stats().learnedCount > 0) {
+            <span class="memo-badge memo-badge--success">{{ stats().learnedCount }} выучено</span>
+          }
+          @if (!deck.isActive) {
+            <span class="memo-badge">на паузе</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (stats().total === 0) {
+      <memo-empty-state title="В колоде пока нет карточек">
+        <span>Нажмите «+», чтобы добавить первый вопрос</span>
+      </memo-empty-state>
+      <a [routerLink]="['/decks', deck.id, 'cards', 'new']" class="memo-btn memo-btn--primary memo-btn--block">
+        <memo-icon name="plus" [size]="20" />
+        Добавить карточку
+      </a>
+    } @else {
+      <label class="search">
+        <memo-icon name="search" [size]="18" class="search__icon" />
+        <input
+          class="search__input"
+          type="search"
+          placeholder="Поиск по карточкам"
+          [value]="query()"
+          (input)="setQuery($any($event.target).value)"
+        />
+      </label>
+
+      <div class="memo-section">
+        @for (card of cards(); track card.id) {
+          <memo-card-list-item [card]="card" (open)="openCard($event)" (menu)="openCardMenu($event)" />
+        } @empty {
+          <p class="memo-hint not-found">Ничего не найдено</p>
+        }
+      </div>
+    }
+  </div>
+
+  @if (todayCount() > 0) {
+    <div class="footer">
+      <button type="button" class="memo-btn memo-btn--primary memo-btn--block" (click)="startStudy()">
+        <memo-icon name="play" [size]="18" />
+        Учить колоду · {{ todayCount() }}
+      </button>
+    </div>
+  }
+
+  @if (isDeckMenuOpen()) {
+    <memo-action-sheet [title]="deck.title" [options]="deckMenuOptions()" (selected)="onDeckAction($event)" (closed)="closeDeckMenu()" />
+  }
+  @if (cardMenuTarget(); as card) {
+    <memo-action-sheet [title]="card.question" [options]="cardMenuOptions" (selected)="onCardAction($event)" (closed)="closeCardMenu()" />
+  }
+} @else {
+  <memo-page-header title="Колода">
+    <button left type="button" class="memo-icon-btn" aria-label="Назад" (click)="back()">
+      <memo-icon name="chevron-left" [size]="26" />
+    </button>
+  </memo-page-header>
+  <div class="memo-page">
+    <memo-empty-state title="Колода не найдена">
+      <span>Возможно, она была удалена</span>
+    </memo-empty-state>
+  </div>
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "human-evolution",
+    "title": "Эволюция человека",
+    "description": "Ключевые факты о происхождении Homo sapiens: виды, мозг, прямохождение, огонь.",
+    "emoji": "🧠",
+    "language": "RU",
+    "cardCount": 12,
+    "file": "human-evolution.json"
+  },
+  {
+    "id": "world-capitals",
+    "title": "Столицы мира",
+    "description": "Столицы стран Европы, Азии, Америки и Африки, которые часто путают.",
+    "emoji": "🌍",
+    "language": "RU",
+    "cardCount": 24,
+    "file": "world-capitals.json"
+  },
+  {
+    "id": "english-phrasal-verbs",
+    "title": "Английские фразовые глаголы",
+    "description": "Самые употребимые фразовые глаголы с переводом и примером.",
+    "emoji": "🇬🇧",
+    "language": "EN → RU",
+    "cardCount": 20,
+    "file": "english-phrasal-verbs.json"
+  },
+  {
+    "id": "seo-basics",
+    "title": "Основы SEO",
+    "description": "Термины и понятия поисковой оптимизации: от краулинга до Core Web Vitals.",
+    "emoji": "💻",
+    "language": "RU",
+    "cardCount": 16,
+    "file": "seo-basics.json"
+  }
+]

@@ -1,0 +1,118 @@
+<memo-page-header [title]="deck()?.title ?? 'Повторение'">
+  <button left type="button" class="memo-icon-btn" aria-label="Завершить" (click)="exit()">
+    <memo-icon name="x" [size]="24" />
+  </button>
+  <span right class="counter">{{ progress().done }} / {{ progress().total }}</span>
+</memo-page-header>
+
+<div class="progress">
+  <div class="progress__bar" [style.width.%]="progress().percent"></div>
+</div>
+
+<div class="memo-page memo-page--no-tabs session">
+  @if (current(); as card) {
+    <div class="stage">
+      <div
+        class="card"
+        [class.card--flipped]="isFlipped()"
+        [class.card--swiping]="swipe().active"
+        [class.card--left]="swipeDirection() === 'left'"
+        [class.card--right]="swipeDirection() === 'right'"
+        [style.transform]="cardTransform()"
+        (click)="flip()"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp()"
+        (pointercancel)="onPointerUp()"
+      >
+        <div class="card__inner">
+          <div class="card__face card__face--front">
+            @if (card.imageId) {
+              <memo-card-image class="card__image" [imageId]="card.imageId" />
+            }
+            <p class="card__question">{{ card.question }}</p>
+            <span class="card__hint">Нажмите, чтобы увидеть ответ</span>
+          </div>
+          <div class="card__face card__face--back">
+            @if (card.imageId) {
+              <memo-card-image class="card__image card__image--small" [imageId]="card.imageId" />
+            }
+            <p class="card__question card__question--small">{{ card.question }}</p>
+            <div class="card__divider"></div>
+            <p class="card__answer">{{ card.answer }}</p>
+          </div>
+        </div>
+        @if (swipeEnabled() && isFlipped()) {
+          <span class="card__stamp card__stamp--left">Забыл</span>
+          <span class="card__stamp card__stamp--right">Помню</span>
+        }
+      </div>
+    </div>
+
+    <div class="controls">
+      @if (isFlipped()) {
+        <div class="grades">
+          @for (option of gradeOptions(); track option.grade) {
+            <button type="button" [class]="'grade grade--' + option.grade" (click)="rate(option.grade)">
+              <span class="grade__label">{{ option.label }}</span>
+              <span class="grade__delay">{{ option.delayLabel }}</span>
+            </button>
+          }
+        </div>
+        @if (swipeEnabled()) {
+          <p class="memo-hint controls__hint">Свайп влево — «Забыл», вправо — «Помню»</p>
+        }
+      } @else {
+        <button type="button" class="memo-btn memo-btn--primary memo-btn--block" (click)="flip()">
+          Показать ответ
+        </button>
+      }
+    </div>
+  } @else if (waitingFor()) {
+    <div class="finish">
+      <div class="finish__icon">⏳</div>
+      <h2 class="finish__title">Следующая карточка через {{ waitingFor()?.countdown }}</h2>
+      <p class="memo-hint">
+        Карточки на коротких шагах заучивания лучше повторять с небольшой паузой.
+        Осталось: {{ progress().remaining }}.
+      </p>
+      <button type="button" class="memo-btn memo-btn--primary memo-btn--block" (click)="showNow()">
+        Показать сейчас
+      </button>
+      <button type="button" class="memo-btn memo-btn--secondary memo-btn--block" (click)="exit()">
+        Закончить на сегодня
+      </button>
+    </div>
+  } @else if (isFinished()) {
+    <div class="finish">
+      <div class="finish__icon">🎉</div>
+      <h2 class="finish__title">
+        @if (result().reviewed > 0) {
+          Сессия завершена
+        } @else {
+          Нечего повторять
+        }
+      </h2>
+      @if (result().reviewed > 0) {
+        <div class="stats">
+          <div class="stats__item">
+            <span class="stats__value">{{ result().reviewed }}</span>
+            <span class="stats__label">ответов</span>
+          </div>
+          <div class="stats__item stats__item--again">
+            <span class="stats__value">{{ result().again }}</span>
+            <span class="stats__label">забыл</span>
+          </div>
+          <div class="stats__item stats__item--good">
+            <span class="stats__value">{{ result().good + result().easy + result().hard }}</span>
+            <span class="stats__label">вспомнил</span>
+          </div>
+        </div>
+      } @else {
+        <p class="memo-hint">Все карточки повторены по расписанию. Загляните позже или добавьте новые.</p>
+      }
+      <button type="button" class="memo-btn memo-btn--primary memo-btn--block" (click)="exit()">Готово</button>
+      <button type="button" class="memo-btn memo-btn--secondary memo-btn--block" (click)="goToDecks()">К колодам</button>
+    </div>
+  }
+</div>

@@ -1,0 +1,127 @@
+<memo-page-header title="Ещё" />
+
+<div class="memo-page">
+  @if (userName(); as name) {
+    <p class="memo-hint greeting">Привет, {{ name }}!</p>
+  }
+
+  @if (studyStats(); as stats) {
+    <div class="stats">
+      <div class="stats__item">
+        <span class="stats__value">{{ stats.totalCards }}</span>
+        <span class="stats__label">карточек</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__value stats__value--success">{{ stats.learnedCards }}</span>
+        <span class="stats__label">выучено</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__value stats__value--accent">{{ stats.reviewedToday }}</span>
+        <span class="stats__label">ответов сегодня</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__value stats__value--flame">
+          <memo-icon name="flame" [size]="20" />
+          {{ stats.streakDays }}
+        </span>
+        <span class="stats__label">дней подряд</span>
+      </div>
+    </div>
+  }
+
+  <div class="memo-section">
+    <div class="memo-section__title">Обучение</div>
+    <div class="memo-row memo-row--static">
+      <div class="memo-row__body">
+        <div class="memo-row__title">Новых карточек в день</div>
+        <div class="memo-row__subtitle">Сколько новых карточек добавлять в повторение ежедневно</div>
+      </div>
+      <div class="stepper">
+        <button type="button" class="stepper__btn" [disabled]="!canDecrease()" (click)="changeNewCardsPerDay(-1)" aria-label="Меньше">
+          <memo-icon name="minus" [size]="18" />
+        </button>
+        <span class="stepper__value">{{ settings().newCardsPerDay }}</span>
+        <button type="button" class="stepper__btn" [disabled]="!canIncrease()" (click)="changeNewCardsPerDay(1)" aria-label="Больше">
+          <memo-icon name="plus" [size]="18" />
+        </button>
+      </div>
+    </div>
+    <button type="button" class="memo-row" (click)="toggleSwipe()">
+      <div class="memo-row__body">
+        <div class="memo-row__title">Оценка свайпом</div>
+        <div class="memo-row__subtitle">Влево — «Забыл», вправо — «Помню»</div>
+      </div>
+      <span class="memo-switch" [class.memo-switch--on]="settings().swipeToRate"></span>
+    </button>
+  </div>
+
+  <div class="memo-section">
+    <div class="memo-section__title">Резервные копии</div>
+    @if (isCloudAvailable) {
+      <button type="button" class="memo-row" [disabled]="isBusy()" (click)="saveToCloud()">
+        <memo-icon name="cloud-upload" [size]="22" class="row-icon" />
+        <div class="memo-row__body">
+          <div class="memo-row__title">Сохранить в облако Telegram</div>
+          <div class="memo-row__subtitle">
+            @if (cloudSummary(); as summary) {
+              Последняя копия: {{ formatDate(summary.exportedAt) }} · {{ summary.cardCount }} карт.
+            } @else {
+              Колоды и прогресс без изображений, доступны на всех устройствах
+            }
+          </div>
+        </div>
+        @if (operation() === 'cloud-save') {
+          <span class="memo-spinner row-spinner"></span>
+        }
+      </button>
+      <button type="button" class="memo-row" [disabled]="isBusy() || !cloudSummary()" (click)="restoreFromCloud()">
+        <memo-icon name="cloud-download" [size]="22" class="row-icon" />
+        <div class="memo-row__body">
+          <div class="memo-row__title">Восстановить из облака</div>
+          <div class="memo-row__subtitle">Заменит текущие данные облачной копией</div>
+        </div>
+        @if (operation() === 'cloud-restore') {
+          <span class="memo-spinner row-spinner"></span>
+        }
+      </button>
+    }
+    <button type="button" class="memo-row" [disabled]="isBusy()" (click)="exportToFile()">
+      <memo-icon name="download" [size]="22" class="row-icon" />
+      <div class="memo-row__body">
+        <div class="memo-row__title">Экспорт в файл</div>
+        <div class="memo-row__subtitle">Полная копия (JSON) вместе с изображениями</div>
+      </div>
+      @if (operation() === 'export') {
+        <span class="memo-spinner row-spinner"></span>
+      }
+    </button>
+    <button type="button" class="memo-row" [disabled]="isBusy()" (click)="pickImportFile()">
+      <memo-icon name="upload" [size]="22" class="row-icon" />
+      <div class="memo-row__body">
+        <div class="memo-row__title">Импорт из файла</div>
+        <div class="memo-row__subtitle">Загрузить ранее сохранённый JSON</div>
+      </div>
+      @if (operation() === 'import') {
+        <span class="memo-spinner row-spinner"></span>
+      }
+    </button>
+    <input #importInput class="hidden-input" type="file" accept="application/json,.json" (change)="onImportFile($event)" />
+  </div>
+
+  <div class="memo-section">
+    <div class="memo-section__title">О приложении</div>
+    <div class="memo-row memo-row--static">
+      <memo-icon name="info" [size]="22" class="row-icon" />
+      <div class="memo-row__body">
+        <div class="memo-row__title">MemoCards</div>
+        <div class="memo-row__subtitle">
+          Карточки с интервальным повторением (алгоритм SM-2). Данные хранятся на этом устройстве
+          @if (isInsideTelegram) {
+            внутри Telegram
+          }
+          — делайте резервные копии.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,73 @@
+<memo-page-header>
+  <button center type="button" class="title-btn" [disabled]="!hasDecks()" (click)="openDeckPicker()">
+    <span class="title-btn__text">{{ title() }}</span>
+    @if (hasDecks()) {
+      <memo-icon name="chevron-down" [size]="18" />
+    }
+  </button>
+  <button right type="button" class="memo-icon-btn memo-icon-btn--filled" aria-label="Добавить карточку" (click)="addCard()">
+    <memo-icon name="plus" [size]="24" />
+  </button>
+</memo-page-header>
+
+<div class="memo-page page">
+  @if (queue().length === 0) {
+    @if (!hasCards()) {
+      <memo-empty-state title="Пока нет карточек">
+        <span class="hint">
+          Нажмите
+          <span class="hint__icon"><memo-icon name="landmark" [size]="22" /></span>
+          чтобы добавить колоду из библиотеки
+        </span>
+        <span class="hint">
+          Нажмите
+          <span class="hint__icon hint__icon--filled"><memo-icon name="plus" [size]="18" /></span>
+          чтобы создать свою карточку
+        </span>
+      </memo-empty-state>
+      <a routerLink="/library" class="memo-btn memo-btn--secondary memo-btn--block">Открыть библиотеку</a>
+    } @else {
+      <memo-empty-state icon="check" title="На сегодня всё!">
+        <span>Карточки к повторению появятся по расписанию.</span>
+        <span>Можно добавить новые карточки или колоду из библиотеки.</span>
+      </memo-empty-state>
+    }
+  } @else {
+    <div class="summary">
+      @if (summary().learningCount > 0) {
+        <span class="memo-badge">{{ summary().learningCount }} заучивание</span>
+      }
+      @if (summary().reviewCount > 0) {
+        <span class="memo-badge memo-badge--warning">{{ summary().reviewCount }} повторить</span>
+      }
+      @if (summary().newCount > 0) {
+        <span class="memo-badge memo-badge--accent">{{ summary().newCount }} новых</span>
+      }
+    </div>
+
+    <div class="memo-section">
+      @for (card of queue(); track card.id) {
+        <memo-card-list-item [card]="card" (open)="openCard($event)" (menu)="openCardMenu($event)" />
+      }
+    </div>
+  }
+</div>
+
+@if (queue().length > 0) {
+  <div class="footer">
+    <button type="button" class="memo-btn memo-btn--primary memo-btn--block" (click)="startSession()">
+      <memo-icon name="play" [size]="18" />
+      Начать повторение · {{ queue().length }}
+    </button>
+  </div>
+}
+
+@if (isDeckPickerOpen()) {
+  <memo-action-sheet title="Что повторяем" [options]="deckPickerOptions()" (selected)="selectDeck($event)" (closed)="closeDeckPicker()" />
+}
+@if (isAddPickerOpen()) {
+  <memo-action-sheet title="В какую колоду добавить" [options]="addPickerOptions()" (selected)="onAddPickerSelected($event)" (closed)="closeAddPicker()" />
+}
+@if (cardMenuTarget(); as card) {
+  <memo-action-sheet [title]="card.question" [options]="cardMenuOptions" (selected)="onCardAction($event)" (closed)="closeCardMenu()" />
+}

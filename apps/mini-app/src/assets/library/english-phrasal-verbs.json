@@ -1,0 +1,29 @@
+{
+  "id": "english-phrasal-verbs",
+  "title": "Английские фразовые глаголы",
+  "description": "Самые употребимые фразовые глаголы с переводом и примером.",
+  "emoji": "🇬🇧",
+  "language": "EN → RU",
+  "cards": [
+    { "question": "give up", "answer": "сдаваться, бросать\nI gave up smoking last year." },
+    { "question": "look after", "answer": "присматривать, заботиться\nCan you look after my cat?" },
+    { "question": "put off", "answer": "откладывать\nDon't put off until tomorrow what you can do today." },
+    { "question": "turn down", "answer": "отклонять; убавлять (звук)\nShe turned down the job offer." },
+    { "question": "come across", "answer": "случайно наткнуться\nI came across an old photo." },
+    { "question": "run out of", "answer": "закончиться (о запасах)\nWe've run out of milk." },
+    { "question": "figure out", "answer": "понять, разобраться\nI can't figure out how this works." },
+    { "question": "bring up", "answer": "воспитывать; поднимать тему\nShe brought up three kids alone." },
+    { "question": "carry on", "answer": "продолжать\nCarry on with your work." },
+    { "question": "get along (with)", "answer": "ладить\nI get along well with my colleagues." },
+    { "question": "break down", "answer": "сломаться; расплакаться\nThe car broke down on the highway." },
+    { "question": "call off", "answer": "отменять\nThe meeting was called off." },
+    { "question": "set up", "answer": "основать, настроить\nThey set up a new company." },
+    { "question": "show up", "answer": "появиться, прийти\nHe showed up an hour late." },
+    { "question": "take off", "answer": "взлетать; снимать (одежду)\nThe plane took off on time." },
+    { "question": "work out", "answer": "тренироваться; решить, получиться\nEverything worked out in the end." },
+    { "question": "look forward to", "answer": "ждать с нетерпением\nI'm looking forward to your visit." },
+    { "question": "point out", "answer": "указать, отметить\nHe pointed out a mistake." },
+    { "question": "hold on", "answer": "подождать\nHold on a second, please." },
+    { "question": "catch up (with)", "answer": "догнать, наверстать\nI need to catch up with my studies." }
+  ]
+}

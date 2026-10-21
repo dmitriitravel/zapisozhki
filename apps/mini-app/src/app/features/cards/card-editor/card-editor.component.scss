@@ -1,0 +1,44 @@
+.deck-name {
+  margin: 0 0 12px;
+  color: var(--memo-hint);
+  font-size: 14px;
+}
+
+.image-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.image-block__preview {
+  display: block;
+  width: 100%;
+  max-height: 40vh;
+  object-fit: contain;
+  border-radius: 12px;
+  background: var(--memo-secondary-bg);
+}
+
+.image-block__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.image-block__input {
+  display: none;
+}
+
+.memo-spinner--small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}

@@ -1,0 +1,53 @@
+<memo-page-header title="Библиотека" />
+
+<div class="memo-page">
+  <p class="memo-hint intro">
+    Готовые колоды. Добавьте колоду к себе — она скопируется в «Колоды», и её можно будет редактировать.
+  </p>
+
+  @if (isLoading()) {
+    <div class="memo-loading"><div class="memo-spinner"></div></div>
+  } @else if (hasError()) {
+    <memo-empty-state icon="info" title="Не удалось загрузить библиотеку">
+      <button type="button" class="memo-btn memo-btn--secondary" (click)="retry()">Повторить</button>
+    </memo-empty-state>
+  } @else {
+    <div class="list">
+      @for (item of items(); track item.entry.id) {
+        <div class="entry">
+          <span class="entry__emoji">{{ item.entry.emoji }}</span>
+          <div class="entry__body">
+            <div class="entry__title">{{ item.entry.title }}</div>
+            <div class="entry__description">{{ item.entry.description }}</div>
+            <div class="entry__meta">
+              <span class="memo-badge">{{ formatCards(item.entry.cardCount) }}</span>
+              <span class="memo-badge">{{ item.entry.language }}</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="memo-btn memo-btn--small"
+            [class.memo-btn--primary]="!item.installed"
+            [class.memo-btn--secondary]="item.installed"
+            [disabled]="installingId() !== null"
+            (click)="install(item.entry)"
+          >
+            @if (installingId() === item.entry.id) {
+              <span class="memo-spinner entry__spinner"></span>
+            } @else if (item.installed) {
+              <memo-icon name="check" [size]="16" />
+              Ещё раз
+            } @else {
+              <memo-icon name="plus" [size]="16" />
+              Добавить
+            }
+          </button>
+        </div>
+      } @empty {
+        <memo-empty-state title="Библиотека пуста">
+          <span>Готовые колоды появятся позже</span>
+        </memo-empty-state>
+      }
+    </div>
+  }
+</div>

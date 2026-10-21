@@ -1,0 +1,81 @@
+<memo-page-header [title]="isEdit() ? 'Карточка' : 'Новая карточка'">
+  <button left type="button" class="memo-icon-btn" aria-label="Назад" (click)="cancel()">
+    <memo-icon name="chevron-left" [size]="26" />
+  </button>
+  <button right type="button" class="memo-btn memo-btn--ghost memo-btn--small" [disabled]="!canSave()" (click)="save()">
+    Готово
+  </button>
+</memo-page-header>
+
+<form class="memo-page memo-page--no-tabs" (submit)="$event.preventDefault(); save()">
+  @if (deck(); as deck) {
+    <p class="deck-name">{{ deck.emoji }} {{ deck.title }}</p>
+  }
+
+  <div class="image-block">
+    @if (pendingPreview(); as preview) {
+      <img class="image-block__preview" [src]="preview" alt="" />
+    } @else if (form().existingImageId) {
+      <memo-card-image [imageId]="form().existingImageId" />
+    }
+
+    <div class="image-block__actions">
+      <button type="button" class="memo-btn memo-btn--secondary memo-btn--small" [disabled]="isImageLoading()" (click)="pickImage()">
+        @if (isImageLoading()) {
+          <span class="memo-spinner memo-spinner--small"></span>
+        } @else {
+          <memo-icon name="image" [size]="18" />
+        }
+        {{ hasImage() ? 'Заменить изображение' : 'Добавить изображение' }}
+      </button>
+      @if (hasImage()) {
+        <button type="button" class="memo-btn memo-btn--danger memo-btn--small" (click)="removeImage()">
+          <memo-icon name="x" [size]="18" />
+          Убрать
+        </button>
+      }
+    </div>
+    <input #fileInput class="image-block__input" type="file" accept="image/*" (change)="onFileSelected($event)" />
+  </div>
+
+  <label class="memo-field">
+    <span class="memo-label">Вопрос (лицевая сторона)</span>
+    <textarea
+      #questionInput
+      class="memo-textarea"
+      placeholder="Что нужно вспомнить?"
+      rows="3"
+      maxlength="1000"
+      [value]="form().question"
+      (input)="setQuestion($any($event.target).value)"
+    ></textarea>
+  </label>
+
+  <label class="memo-field">
+    <span class="memo-label">Ответ (обратная сторона)</span>
+    <textarea
+      class="memo-textarea"
+      placeholder="Правильный ответ"
+      rows="4"
+      maxlength="2000"
+      [value]="form().answer"
+      (input)="setAnswer($any($event.target).value)"
+    ></textarea>
+  </label>
+
+  <div class="actions">
+    <button type="submit" class="memo-btn memo-btn--primary memo-btn--block" [disabled]="!canSave()">
+      {{ isEdit() ? 'Сохранить' : 'Добавить карточку' }}
+    </button>
+    @if (!isEdit()) {
+      <button type="button" class="memo-btn memo-btn--secondary memo-btn--block" [disabled]="!canSave()" (click)="save(true)">
+        Добавить и создать ещё
+      </button>
+    } @else {
+      <button type="button" class="memo-btn memo-btn--danger memo-btn--block" (click)="remove()">
+        <memo-icon name="trash" [size]="18" />
+        Удалить карточку
+      </button>
+    }
+  </div>
+</form>

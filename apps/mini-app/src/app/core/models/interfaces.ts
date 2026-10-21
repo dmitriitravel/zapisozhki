@@ -1,0 +1,146 @@
+import {
+  CardLearningState,
+  ReviewGrade,
+  SchedulingState,
+} from '@memo/shared/spaced-repetition';
+
+/** Колода (проект) — набор карточек на одну тему. */
+export interface Deck {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly emoji: string;
+  /** Участвует ли колода в общем списке повторения. */
+  readonly isActive: boolean;
+  /** Идентификатор колоды из библиотеки, если она добавлена оттуда. */
+  readonly libraryId: string | null;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+/** Карточка: вопрос (лицевая сторона) и ответ (обратная сторона). */
+export interface Card {
+  readonly id: string;
+  readonly deckId: string;
+  readonly question: string;
+  readonly answer: string;
+  /** Ссылка на полноразмерное изображение в хранилище images. */
+  readonly imageId: string | null;
+  /** Маленькое превью (data URL) для списков; хранится прямо в карточке. */
+  readonly thumbnailDataUrl: string | null;
+  readonly scheduling: SchedulingState;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+export interface StoredImage {
+  readonly id: string;
+  readonly dataUrl: string;
+  readonly width: number;
+  readonly height: number;
+  readonly createdAt: number;
+}
+
+export interface ReviewLogEntry {
+  readonly id: string;
+  readonly cardId: string;
+  readonly deckId: string;
+  readonly grade: ReviewGrade;
+  readonly reviewedAt: number;
+  readonly stateBefore: CardLearningState;
+  readonly stateAfter: CardLearningState;
+}
+
+export interface AppSettings {
+  /** Сколько новых карточек вводить в день. */
+  readonly newCardsPerDay: number;
+  readonly hapticsEnabled: boolean;
+  /** Показывать ли ответ сразу (без переворота). */
+  readonly swipeToRate: boolean;
+}
+
+export interface SettingsRecord {
+  readonly key: 'app';
+  readonly value: AppSettings;
+}
+
+export interface DeckStats {
+  readonly deckId: string;
+  readonly total: number;
+  readonly newCount: number;
+  readonly learningCount: number;
+  readonly dueCount: number;
+  /** Карточки в review с интервалом от 21 дня считаются выученными. */
+  readonly learnedCount: number;
+}
+
+export interface DeckDraft {
+  readonly title: string;
+  readonly description: string;
+  readonly emoji: string;
+}
+
+export interface CardDraft {
+  readonly question: string;
+  readonly answer: string;
+  readonly imageId: string | null;
+  readonly thumbnailDataUrl: string | null;
+}
+
+/** Результат обработки выбранного пользователем изображения. */
+export interface ProcessedImage {
+  readonly full: StoredImage;
+  readonly thumbnailDataUrl: string;
+}
+
+/** Карточка готовой колоды из библиотеки. */
+export interface LibraryCard {
+  readonly question: string;
+  readonly answer: string;
+  /** Путь к изображению в assets (необязательно). */
+  readonly imageUrl?: string;
+}
+
+export interface LibraryDeck {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly emoji: string;
+  readonly language: string;
+  readonly cards: readonly LibraryCard[];
+}
+
+export interface LibraryIndexEntry {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly emoji: string;
+  readonly language: string;
+  readonly cardCount: number;
+  readonly file: string;
+}
+
+/** Формат файла резервной копии / экспорта. */
+export interface BackupPayload {
+  readonly version: 1;
+  readonly exportedAt: number;
+  readonly decks: readonly Deck[];
+  readonly cards: readonly Card[];
+  readonly images: readonly StoredImage[];
+  readonly reviewLog: readonly ReviewLogEntry[];
+  readonly settings: AppSettings;
+}
+
+export interface BackupSummary {
+  readonly exportedAt: number;
+  readonly deckCount: number;
+  readonly cardCount: number;
+}
+
+export interface StudyStats {
+  readonly totalCards: number;
+  readonly learnedCards: number;
+  readonly dueToday: number;
+  readonly reviewedToday: number;
+  readonly streakDays: number;
+}
