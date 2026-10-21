@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   OnInit,
   computed,
@@ -10,24 +11,45 @@ import {
 } from '@angular/core';
 import { TelegramService } from '@memo/shared/telegram';
 import { BackupService } from '../../core/backup/backup.service';
-import { BackupSummary, StudyStats } from '../../core/models/interfaces';
+import { AppSettings, BackupSummary, StudyStats } from '../../core/models/interfaces';
+import { ProfileService } from '../../core/profile/profile.service';
+import {
+  SPEECH_RATE_MAX,
+  SPEECH_RATE_MIN,
+  SPEECH_RATE_STEP,
+  describeSpeechRate,
+} from '../../core/speech/speech-language';
+import { SpeechService } from '../../core/speech/speech.service';
 import { StatsService } from '../../core/stats/stats.service';
 import { MemoStore } from '../../core/store/memo-store.service';
 import { ToastService } from '../../core/toast/toast.service';
 import { formatCount, formatDate } from '../../core/utils/format';
+import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { PageHeaderComponent } from '../../ui/page-header/page-header.component';
+import { ActivityChartComponent } from './activity-chart/activity-chart.component';
 import {
   BackupOperation,
   NEW_CARDS_PER_DAY_MAX,
   NEW_CARDS_PER_DAY_MIN,
   NEW_CARDS_PER_DAY_STEP,
+  SPEECH_TEST_PHRASE,
+  USER_NAME_MAX_LENGTH,
 } from './interfaces';
+import { RetentionChartsComponent } from './retention-charts/retention-charts.component';
+
+const USER_NAME_SAVE_DELAY_MS = 400;
 
 @Component({
   selector: 'memo-more',
   standalone: true,
-  imports: [PageHeaderComponent, IconComponent],
+  imports: [
+    PageHeaderComponent,
+    IconComponent,
+    AvatarComponent,
+    ActivityChartComponent,
+    RetentionChartsComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './more.component.html',
   styleUrl: './more.component.scss',
@@ -36,14 +58,18 @@ export class MoreComponent implements OnInit {
   private readonly store = inject(MemoStore);
   private readonly stats = inject(StatsService);
   private readonly backup = inject(BackupService);
+  private readonly profile = inject(ProfileService);
+  private readonly speech = inject(SpeechService);
   private readonly telegram = inject(TelegramService);
   private readonly toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly importInput = viewChild<ElementRef<HTMLInputElement>>('importInput');
 
   private readonly statsState = signal<StudyStats | null>(null);
   private readonly cloudSummaryState = signal<BackupSummary | null>(null);
   private readonly operationState = signal<BackupOperation>(null);
+  private userNameTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly settings = this.store.settings;
   readonly studyStats = this.statsState.asReadonly();
@@ -52,16 +78,31 @@ export class MoreComponent implements OnInit {
   readonly isBusy = computed(() => this.operationState() !== null);
   readonly isCloudAvailable = this.backup.isCloudAvailable();
   readonly isInsideTelegram = this.telegram.isAvailable();
-  readonly userName = computed(() => {
-    const user = this.telegram.getUser();
-    return user ? [user.first_name, user.last_name].filter(Boolean).join(' ') : null;
-  });
+  readonly canSpeak = this.speech.isAvailable();
+  readonly isSpeaking = this.speech.isSpeaking;
+  readonly displayName = this.profile.displayName;
+  readonly initials = this.profile.initials;
+  readonly photoUrl = this.profile.photoUrl;
+  readonly userNameMaxLength = USER_NAME_MAX_LENGTH;
+  readonly speechRateMin = SPEECH_RATE_MIN;
+  readonly speechRateMax = SPEECH_RATE_MAX;
+  readonly speechRateStep = SPEECH_RATE_STEP;
+  readonly speechRateLabel = computed(() => describeSpeechRate(this.store.settings().speechRate));
   readonly canDecrease = computed(
     () => this.store.settings().newCardsPerDay > NEW_CARDS_PER_DAY_MIN
   );
   readonly canIncrease = computed(
     () => this.store.settings().newCardsPerDay < NEW_CARDS_PER_DAY_MAX
   );
+
+  constructor() {
+    this.destroyRef.onDestroy(() => {
+      this.speech.stop();
+      if (this.userNameTimer) {
+        clearTimeout(this.userNameTimer);
+      }
+    });
+  }
 
   ngOnInit(): void {
     void this.refreshStats();
@@ -81,9 +122,33 @@ export class MoreComponent implements OnInit {
     await this.store.updateSettings({ newCardsPerDay: next });
   }
 
-  async toggleSwipe(): Promise<void> {
+  async toggle(key: 'swipeToRate' | 'imageOnlyFront' | 'autoSpeak'): Promise<void> {
     this.telegram.hapticSelection();
-    await this.store.updateSettings({ swipeToRate: !this.store.settings().swipeToRate });
+    const patch: Partial<AppSettings> = { [key]: !this.store.settings()[key] };
+    await this.store.updateSettings(patch);
+  }
+
+  async setSpeechRate(value: string): Promise<void> {
+    const rate = Number.parseFloat(value);
+    if (Number.isNaN(rate)) {
+      return;
+    }
+    await this.store.updateSettings({ speechRate: rate });
+  }
+
+  testSpeech(): void {
+    this.speech.toggle(SPEECH_TEST_PHRASE);
+  }
+
+  /** Имя сохраняем с небольшой задержкой, чтобы не писать в базу на каждую букву. */
+  setUserName(value: string): void {
+    if (this.userNameTimer) {
+      clearTimeout(this.userNameTimer);
+    }
+    this.userNameTimer = setTimeout(() => {
+      this.userNameTimer = null;
+      void this.store.updateSettings({ userName: value.slice(0, USER_NAME_MAX_LENGTH) });
+    }, USER_NAME_SAVE_DELAY_MS);
   }
 
   async saveToCloud(): Promise<void> {
@@ -149,6 +214,10 @@ export class MoreComponent implements OnInit {
 
   formatDate(timestamp: number): string {
     return formatDate(timestamp);
+  }
+
+  formatDays(count: number): string {
+    return formatCount(count, ['день', 'дня', 'дней']);
   }
 
   private async run(operation: BackupOperation, action: () => Promise<void>): Promise<void> {

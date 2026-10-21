@@ -1,0 +1,58 @@
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.stage {
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+  min-height: 46vh;
+  max-height: 560px;
+  margin-bottom: 20px;
+  touch-action: pan-y;
+}
+
+.card {
+  display: flex;
+  width: 100%;
+  min-height: inherit;
+  border-radius: var(--memo-card-radius);
+  background: var(--memo-section-bg);
+  box-shadow: 0 12px 34px var(--memo-shadow);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.card--swiping {
+  transition: none;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.nav__btn {
+  width: 48px;
+  height: 48px;
+}
+
+.nav__position {
+  min-width: 72px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--memo-hint);
+}
+
+.nav__hint {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 12px;
+}

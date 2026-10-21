@@ -21,6 +21,7 @@ const EMPTY_FORM: DeckEditorForm = {
   title: '',
   description: '',
   emoji: DECK_EMOJIS[0],
+  isActive: true,
 };
 
 @Component({
@@ -72,6 +73,19 @@ export class DeckEditorComponent {
     this.formState.update((form) => ({ ...form, emoji }));
   }
 
+  /** Поле эмодзи: берём первый графемный кластер введённого текста. */
+  setCustomEmoji(value: string): void {
+    const first = Array.from(value.trim())[0];
+    if (first) {
+      this.formState.update((form) => ({ ...form, emoji: first }));
+    }
+  }
+
+  toggleActive(): void {
+    this.telegram.hapticSelection();
+    this.formState.update((form) => ({ ...form, isActive: !form.isActive }));
+  }
+
   cancel(): void {
     this.location.back();
   }
@@ -109,6 +123,7 @@ export class DeckEditorComponent {
         title: deck.title,
         description: deck.description,
         emoji: deck.emoji,
+        isActive: deck.isActive,
       });
     }
   }

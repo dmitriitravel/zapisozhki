@@ -1,23 +1,37 @@
-<memo-page-header [title]="deck()?.title ?? 'Повторение'">
-  <button left type="button" class="memo-icon-btn" aria-label="Завершить" (click)="exit()">
-    <memo-icon name="x" [size]="24" />
+@if (!hasAnyCards()) {
+  <memo-empty-state title="Пока нет карточек">
+    <span class="hint">
+      Нажмите
+      <span class="hint__icon hint__icon--filled"><memo-icon name="plus" [size]="18" /></span>
+      чтобы создать колоду или карточку
+    </span>
+    <span class="hint">
+      или добавьте готовую колоду из библиотеки
+    </span>
+  </memo-empty-state>
+  <a routerLink="/library" class="memo-btn memo-btn--navy memo-btn--block">
+    <memo-icon name="landmark" [size]="18" />
+    Открыть библиотеку
+  </a>
+} @else if (!hasScopedCards()) {
+  <memo-empty-state title="В этой колоде пока нет карточек">
+    <span>Добавьте первый вопрос — и он появится здесь</span>
+  </memo-empty-state>
+  <button type="button" class="memo-btn memo-btn--navy memo-btn--block" (click)="addCard.emit()">
+    <memo-icon name="plus" [size]="18" />
+    Новая карточка
   </button>
-  <span right class="counter">{{ progress().done }} / {{ progress().total }}</span>
-</memo-page-header>
-
-<div class="progress">
-  <div class="progress__bar" [style.width.%]="progress().percent"></div>
-</div>
-
-<div class="memo-page memo-page--no-tabs session">
-  @if (current(); as card) {
+} @else {
+  @if (session.current(); as card) {
     <div class="stage">
+      @if (session.next()) {
+        <div class="peek"></div>
+      }
       <div
         class="card"
-        [class.card--flipped]="isFlipped()"
+        [class.card--flipped]="session.isFlipped()"
         [class.card--swiping]="swipe().active"
-        [class.card--left]="swipeDirection() === 'left'"
-        [class.card--right]="swipeDirection() === 'right'"
+        [class.card--flying]="flyAway() !== null"
         [style.transform]="cardTransform()"
         (click)="flip()"
         (pointerdown)="onPointerDown($event)"
@@ -27,32 +41,35 @@
       >
         <div class="card__inner">
           <div class="card__face card__face--front">
-            @if (card.imageId) {
-              <memo-card-image class="card__image" [imageId]="card.imageId" />
-            }
-            <p class="card__question">{{ card.question }}</p>
-            <span class="card__hint">Нажмите, чтобы увидеть ответ</span>
+            <memo-study-card [card]="card" side="front" [imageOnlyFront]="imageOnlyFront()" />
           </div>
           <div class="card__face card__face--back">
-            @if (card.imageId) {
-              <memo-card-image class="card__image card__image--small" [imageId]="card.imageId" />
-            }
-            <p class="card__question card__question--small">{{ card.question }}</p>
-            <div class="card__divider"></div>
-            <p class="card__answer">{{ card.answer }}</p>
+            <memo-study-card
+              [card]="card"
+              side="back"
+              [speaking]="isSpeaking()"
+              (speak)="speak.emit($event)"
+              (menu)="menu.emit($event)"
+            />
           </div>
         </div>
-        @if (swipeEnabled() && isFlipped()) {
-          <span class="card__stamp card__stamp--left">Забыл</span>
-          <span class="card__stamp card__stamp--right">Помню</span>
+        @if (swipeEnabled() && session.isFlipped()) {
+          <span class="stamp stamp--right" [style.opacity]="rightStampOpacity()">
+            <memo-icon name="check" [size]="22" />
+            ЕСТЬ
+          </span>
+          <span class="stamp stamp--left" [style.opacity]="leftStampOpacity()">
+            <memo-icon name="rotate-ccw" [size]="22" />
+            ЕЩЁ РАЗ
+          </span>
         }
       </div>
     </div>
 
     <div class="controls">
-      @if (isFlipped()) {
+      @if (session.isFlipped()) {
         <div class="grades">
-          @for (option of gradeOptions(); track option.grade) {
+          @for (option of session.gradeOptions(); track option.grade) {
             <button type="button" [class]="'grade grade--' + option.grade" (click)="rate(option.grade)">
               <span class="grade__label">{{ option.label }}</span>
               <span class="grade__delay">{{ option.delayLabel }}</span>
@@ -60,59 +77,68 @@
           }
         </div>
         @if (swipeEnabled()) {
-          <p class="memo-hint controls__hint">Свайп влево — «Забыл», вправо — «Помню»</p>
+          <p class="memo-hint controls__hint">Свайп вправо — «Есть», влево — «Ещё раз»</p>
         }
       } @else {
-        <button type="button" class="memo-btn memo-btn--primary memo-btn--block" (click)="flip()">
+        <button type="button" class="memo-btn memo-btn--navy memo-btn--block" (click)="flip()">
           Показать ответ
         </button>
       }
     </div>
-  } @else if (waitingFor()) {
-    <div class="finish">
-      <div class="finish__icon">⏳</div>
-      <h2 class="finish__title">Следующая карточка через {{ waitingFor()?.countdown }}</h2>
-      <p class="memo-hint">
-        Карточки на коротких шагах заучивания лучше повторять с небольшой паузой.
-        Осталось: {{ progress().remaining }}.
-      </p>
-      <button type="button" class="memo-btn memo-btn--primary memo-btn--block" (click)="showNow()">
-        Показать сейчас
-      </button>
-      <button type="button" class="memo-btn memo-btn--secondary memo-btn--block" (click)="exit()">
-        Закончить на сегодня
-      </button>
-    </div>
-  } @else if (isFinished()) {
-    <div class="finish">
-      <div class="finish__icon">🎉</div>
-      <h2 class="finish__title">
-        @if (result().reviewed > 0) {
-          Сессия завершена
-        } @else {
-          Нечего повторять
-        }
-      </h2>
-      @if (result().reviewed > 0) {
-        <div class="stats">
-          <div class="stats__item">
-            <span class="stats__value">{{ result().reviewed }}</span>
-            <span class="stats__label">ответов</span>
-          </div>
-          <div class="stats__item stats__item--again">
-            <span class="stats__value">{{ result().again }}</span>
-            <span class="stats__label">забыл</span>
-          </div>
-          <div class="stats__item stats__item--good">
-            <span class="stats__value">{{ result().good + result().easy + result().hard }}</span>
-            <span class="stats__label">вспомнил</span>
-          </div>
+  } @else {
+    @if (session.waiting(); as waiting) {
+      <div class="finish">
+        <div class="finish__icon finish__icon--muted">
+          <memo-icon name="clock" [size]="44" />
         </div>
-      } @else {
-        <p class="memo-hint">Все карточки повторены по расписанию. Загляните позже или добавьте новые.</p>
-      }
-      <button type="button" class="memo-btn memo-btn--primary memo-btn--block" (click)="exit()">Готово</button>
-      <button type="button" class="memo-btn memo-btn--secondary memo-btn--block" (click)="goToDecks()">К колодам</button>
-    </div>
+        <h2 class="finish__title">Следующая карточка через {{ waiting.countdown }}</h2>
+        <p class="memo-hint finish__text">
+          Карточки на коротких шагах заучивания лучше повторять с небольшой паузой.
+          Осталось: {{ session.progress().remaining }}.
+        </p>
+        <button type="button" class="memo-btn memo-btn--navy memo-btn--block" (click)="showNow()">
+          Показать сейчас
+        </button>
+      </div>
+    } @else if (session.result().reviewed > 0) {
+      <div class="finish">
+        <div class="finish__icon">
+          <memo-icon name="party-popper" [size]="44" />
+        </div>
+        <h2 class="finish__title">Сессия завершена</h2>
+        <p class="memo-hint finish__text">Карточек повторено: {{ session.result().reviewed }}</p>
+        <div class="results">
+          <span class="memo-badge memo-badge--danger">Забыл · {{ session.result().again }}</span>
+          <span class="memo-badge memo-badge--warning">Трудно · {{ session.result().hard }}</span>
+          <span class="memo-badge memo-badge--success">Помню · {{ session.result().good }}</span>
+          <span class="memo-badge memo-badge--info">Легко · {{ session.result().easy }}</span>
+        </div>
+        <button type="button" class="memo-btn memo-btn--navy memo-btn--block" (click)="restart()">
+          Проверить, что осталось
+        </button>
+        <button type="button" class="memo-btn memo-btn--secondary memo-btn--block" (click)="repeatAll()">
+          <memo-icon name="refresh-cw" [size]="18" />
+          Повторить все карточки
+        </button>
+      </div>
+    } @else {
+      <div class="finish">
+        <div class="finish__icon finish__icon--success">
+          <memo-icon name="check" [size]="44" />
+        </div>
+        <h2 class="finish__title">На сегодня всё</h2>
+        <p class="memo-hint finish__text">
+          Карточки к повторению появятся по расписанию. Можно пройтись по всем карточкам
+          или переключиться в режим Memo.
+        </p>
+        <button type="button" class="memo-btn memo-btn--navy memo-btn--block" (click)="repeatAll()">
+          <memo-icon name="refresh-cw" [size]="18" />
+          Повторить все карточки
+        </button>
+        <button type="button" class="memo-btn memo-btn--secondary memo-btn--block" (click)="switchToMemo()">
+          Режим Memo
+        </button>
+      </div>
+    }
   }
-</div>
+}

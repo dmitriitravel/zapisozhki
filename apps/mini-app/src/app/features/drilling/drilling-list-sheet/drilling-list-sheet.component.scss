@@ -1,0 +1,43 @@
+.tabs {
+  display: flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--memo-secondary-bg);
+}
+
+.tabs__item {
+  flex: 1;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--memo-hint);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.tabs__item--active {
+  background: var(--memo-navy);
+  color: var(--memo-on-navy);
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 0 12px;
+}
+
+.list {
+  margin-bottom: 8px;
+}
+
+.empty {
+  margin: 0;
+  padding: 24px 16px;
+  text-align: center;
+}

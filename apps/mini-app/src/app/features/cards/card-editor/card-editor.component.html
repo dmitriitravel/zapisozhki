@@ -13,24 +13,34 @@
   }
 
   <div class="image-block">
-    @if (pendingPreview(); as preview) {
-      <img class="image-block__preview" [src]="preview" alt="" />
-    } @else if (form().existingImageId) {
-      <memo-card-image [imageId]="form().existingImageId" />
-    }
+    <button type="button" class="image-panel" [class.image-panel--empty]="!hasImage()" [disabled]="isImageLoading()" (click)="pickImage()">
+      @if (isImageLoading()) {
+        <span class="memo-spinner"></span>
+      } @else if (pendingPreview()) {
+        <img class="image-panel__preview" [src]="pendingPreview()" alt="" />
+      } @else if (form().existingImageId) {
+        <memo-card-image class="image-panel__preview" [imageId]="form().existingImageId" />
+      } @else {
+        <memo-icon name="image" [size]="36" class="image-panel__icon" />
+        <span class="image-panel__title">Добавить изображение</span>
+        <span class="image-panel__hint">Нажмите, чтобы выбрать файл или сделать фото</span>
+      }
+    </button>
 
     <div class="image-block__actions">
       <button type="button" class="memo-btn memo-btn--secondary memo-btn--small" [disabled]="isImageLoading()" (click)="pickImage()">
-        @if (isImageLoading()) {
-          <span class="memo-spinner memo-spinner--small"></span>
-        } @else {
-          <memo-icon name="image" [size]="18" />
-        }
-        {{ hasImage() ? 'Заменить изображение' : 'Добавить изображение' }}
+        <memo-icon name="image" [size]="18" />
+        Файл…
       </button>
+      @if (canReadClipboard) {
+        <button type="button" class="memo-btn memo-btn--secondary memo-btn--small" [disabled]="isImageLoading()" (click)="pasteFromClipboard()">
+          <memo-icon name="clipboard" [size]="18" />
+          Буфер
+        </button>
+      }
       @if (hasImage()) {
         <button type="button" class="memo-btn memo-btn--danger memo-btn--small" (click)="removeImage()">
-          <memo-icon name="x" [size]="18" />
+          <memo-icon name="trash" [size]="18" />
           Убрать
         </button>
       }
@@ -43,7 +53,7 @@
     <textarea
       #questionInput
       class="memo-textarea"
-      placeholder="Что нужно вспомнить?"
+      placeholder="Слово, фраза или вопрос"
       rows="3"
       maxlength="1000"
       [value]="form().question"
@@ -55,7 +65,7 @@
     <span class="memo-label">Ответ (обратная сторона)</span>
     <textarea
       class="memo-textarea"
-      placeholder="Правильный ответ"
+      placeholder="Перевод, определение или ответ"
       rows="4"
       maxlength="2000"
       [value]="form().answer"
@@ -63,13 +73,20 @@
     ></textarea>
   </label>
 
+  @if (canSpeak) {
+    <button type="button" class="memo-btn memo-btn--secondary speak-btn" [class.speak-btn--active]="isSpeaking()" [disabled]="!form().question.trim()" (click)="speakQuestion()">
+      <memo-icon [name]="isSpeaking() ? 'volume-active' : 'volume'" [size]="18" />
+      Озвучить вопрос
+    </button>
+  }
+
   <div class="actions">
-    <button type="submit" class="memo-btn memo-btn--primary memo-btn--block" [disabled]="!canSave()">
-      {{ isEdit() ? 'Сохранить' : 'Добавить карточку' }}
+    <button type="submit" class="memo-btn memo-btn--navy memo-btn--block" [disabled]="!canSave()">
+      {{ isEdit() ? 'Сохранить' : 'Создать карточку' }}
     </button>
     @if (!isEdit()) {
       <button type="button" class="memo-btn memo-btn--secondary memo-btn--block" [disabled]="!canSave()" (click)="save(true)">
-        Добавить и создать ещё
+        Сохранить и ещё
       </button>
     } @else {
       <button type="button" class="memo-btn memo-btn--danger memo-btn--block" (click)="remove()">

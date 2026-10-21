@@ -5,7 +5,7 @@ import { IconComponent } from '../icon/icon.component';
 import { TabItem } from '../interfaces';
 
 const TABS: readonly TabItem[] = [
-  { path: '/drilling', label: 'Повторение', icon: 'book-open' },
+  { path: '/drilling', label: 'Тренировка', icon: 'book-open' },
   { path: '/decks', label: 'Колоды', icon: 'layers' },
   { path: '/library', label: 'Библиотека', icon: 'landmark' },
   { path: '/more', label: 'Ещё', icon: 'grid' },

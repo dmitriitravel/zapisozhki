@@ -1,0 +1,60 @@
+<memo-bottom-sheet title="Drilling list" (closed)="closed.emit()">
+  <div header class="tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="tabs__item"
+      [class.tabs__item--active]="tab() === 'today'"
+      [attr.aria-selected]="tab() === 'today'"
+      (click)="setTab('today')"
+    >
+      Сегодня · {{ todayCards().length }}
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="tabs__item"
+      [class.tabs__item--active]="tab() === 'all'"
+      [attr.aria-selected]="tab() === 'all'"
+      (click)="setTab('all')"
+    >
+      Все · {{ allCards().length }}
+    </button>
+  </div>
+
+  @if (tab() === 'today' && todayCards().length > 0) {
+    <div class="summary">
+      @if (summary().learningCount > 0) {
+        <span class="memo-badge memo-badge--warning">Учится · {{ summary().learningCount }}</span>
+      }
+      @if (summary().reviewCount > 0) {
+        <span class="memo-badge memo-badge--accent">К повторению · {{ summary().reviewCount }}</span>
+      }
+      @if (summary().newCount > 0) {
+        <span class="memo-badge memo-badge--info">Новые · {{ summary().newCount }}</span>
+      }
+    </div>
+  }
+
+  <div class="memo-section list">
+    @for (card of cards(); track card.id) {
+      <memo-card-list-item
+        [card]="card"
+        [state]="describe(card)"
+        [showSpeaker]="canSpeak"
+        [speaking]="isSpeaking(card)"
+        (open)="open.emit($event)"
+        (menu)="menu.emit($event)"
+        (speak)="speak($event)"
+      />
+    } @empty {
+      <p class="memo-hint empty">
+        @if (tab() === 'today') {
+          На сегодня карточек нет — всё повторено по расписанию.
+        } @else {
+          В этой области пока нет карточек.
+        }
+      </p>
+    }
+  </div>
+</memo-bottom-sheet>

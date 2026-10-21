@@ -13,6 +13,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   newCardsPerDay: 20,
   hapticsEnabled: true,
   swipeToRate: true,
+  autoSpeak: false,
+  speechRate: 0.5,
+  imageOnlyFront: true,
+  userName: '',
 };
 
 /** Доступ к IndexedDB. Все методы асинхронные и не держат состояние. */
@@ -168,7 +172,11 @@ export class MemoRepository {
       ...payload.reviewLog.map((entry) =>
         tx.objectStore('reviewLog').put(entry)
       ),
-      tx.objectStore('settings').put({ key: 'app', value: payload.settings }),
+      // Копии из старых версий (и из Mac-приложения) могут не содержать части настроек.
+      tx.objectStore('settings').put({
+        key: 'app',
+        value: { ...DEFAULT_SETTINGS, ...payload.settings },
+      }),
     ]);
     await tx.done;
   }

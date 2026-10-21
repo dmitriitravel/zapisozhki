@@ -1,0 +1,48 @@
+@if (session.memoCurrent(); as card) {
+  <div class="stage">
+    <div
+      class="card"
+      [class.card--swiping]="cardTransform() !== ''"
+      [style.transform]="cardTransform()"
+      (pointerdown)="onPointerDown($event)"
+      (pointermove)="onPointerMove($event)"
+      (pointerup)="onPointerUp()"
+      (pointercancel)="onPointerUp()"
+    >
+      <memo-study-card
+        [card]="card"
+        side="both"
+        [speaking]="isSpeaking()"
+        (speak)="speak.emit($event)"
+        (menu)="menu.emit($event)"
+      />
+    </div>
+  </div>
+
+  <div class="nav">
+    <button type="button" class="memo-icon-btn memo-icon-btn--filled nav__btn" aria-label="Предыдущая" [disabled]="total() < 2" (click)="previous()">
+      <memo-icon name="arrow-left" [size]="22" />
+    </button>
+    <span class="nav__position">{{ session.memoPosition() }} из {{ total() }}</span>
+    <button type="button" class="memo-icon-btn memo-icon-btn--filled nav__btn" aria-label="Следующая" [disabled]="total() < 2" (click)="next()">
+      <memo-icon name="arrow-right" [size]="22" />
+    </button>
+  </div>
+  <p class="memo-hint nav__hint">Memo — запоминание: обе стороны видны сразу, без оценок. Переключитесь в Dremo, чтобы проверить себя.</p>
+} @else if (!hasAnyCards()) {
+  <memo-empty-state title="Пока нет карточек">
+    <span>Создайте колоду или добавьте готовую из библиотеки</span>
+  </memo-empty-state>
+  <a routerLink="/library" class="memo-btn memo-btn--navy memo-btn--block">
+    <memo-icon name="landmark" [size]="18" />
+    Открыть библиотеку
+  </a>
+} @else {
+  <memo-empty-state title="В этой колоде пока нет карточек">
+    <span>Добавьте первый вопрос — и он появится здесь</span>
+  </memo-empty-state>
+  <button type="button" class="memo-btn memo-btn--navy memo-btn--block" (click)="addCard.emit()">
+    <memo-icon name="plus" [size]="18" />
+    Новая карточка
+  </button>
+}

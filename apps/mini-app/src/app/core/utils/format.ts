@@ -57,6 +57,26 @@ export function formatCount(
   return `${count} ${pluralize(count, forms)}`;
 }
 
+/** Инициалы для аватара: «Мария Иванова» → «МИ», «anna» → «A». */
+export function formatInitials(name: string): string {
+  const parts = name
+    .trim()
+    .split(/\s+/u)
+    .filter((part) => part.length > 0);
+  if (parts.length === 0) {
+    return '';
+  }
+  const letters = parts.length === 1 ? [parts[0]] : [parts[0], parts[parts.length - 1]];
+  return letters.map((part) => Array.from(part)[0].toUpperCase()).join('');
+}
+
+/** Короткая подпись дня для графика активности: «пн», «вт»… */
+export function formatWeekday(timestamp: number): string {
+  return new Intl.DateTimeFormat('ru-RU', { weekday: 'short' })
+    .format(new Date(timestamp))
+    .replace('.', '');
+}
+
 export function formatDate(timestamp: number): string {
   return new Intl.DateTimeFormat('ru-RU', {
     day: 'numeric',

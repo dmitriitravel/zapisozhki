@@ -42,7 +42,12 @@ export class LibraryService {
 
   /** Уже добавлена ли колода из библиотеки в «Мои колоды». */
   isInstalled(libraryId: string): boolean {
-    return this.store.decks().some((deck) => deck.libraryId === libraryId);
+    return this.getInstalledDeckId(libraryId) !== null;
+  }
+
+  /** Идентификатор колоды пользователя, созданной из этой библиотечной (самой свежей). */
+  getInstalledDeckId(libraryId: string): string | null {
+    return this.store.decks().find((deck) => deck.libraryId === libraryId)?.id ?? null;
   }
 
   async install(entry: LibraryIndexEntry): Promise<Deck> {
@@ -54,6 +59,7 @@ export class LibraryService {
         title: libraryDeck.title,
         description: libraryDeck.description,
         emoji: libraryDeck.emoji,
+        isActive: true,
       },
       libraryDeck.id
     );

@@ -55,8 +55,16 @@ export interface AppSettings {
   /** Сколько новых карточек вводить в день. */
   readonly newCardsPerDay: number;
   readonly hapticsEnabled: boolean;
-  /** Показывать ли ответ сразу (без переворота). */
+  /** Оценивать карточку свайпом (вправо — «Есть», влево — «Ещё раз»). */
   readonly swipeToRate: boolean;
+  /** Озвучивать вопрос автоматически при перевороте карточки. */
+  readonly autoSpeak: boolean;
+  /** Скорость речи, 0.2–0.7 (как в Mac-версии; 0.5 — обычная). */
+  readonly speechRate: number;
+  /** На лицевой стороне показывать только изображение (если оно есть). */
+  readonly imageOnlyFront: boolean;
+  /** Имя пользователя для аватара (если не задано — берётся из Telegram). */
+  readonly userName: string;
 }
 
 export interface SettingsRecord {
@@ -78,6 +86,8 @@ export interface DeckDraft {
   readonly title: string;
   readonly description: string;
   readonly emoji: string;
+  /** Участвует ли колода в Drilling list (общем повторении). */
+  readonly isActive: boolean;
 }
 
 export interface CardDraft {
@@ -143,4 +153,24 @@ export interface StudyStats {
   readonly dueToday: number;
   readonly reviewedToday: number;
   readonly streakDays: number;
+  /** Повторения по дням за последние две недели (от старых к новым). */
+  readonly dailyReviews: readonly DailyReviewPoint[];
+}
+
+export interface DailyReviewPoint {
+  /** Начало дня (локальное время), мс. */
+  readonly day: number;
+  readonly count: number;
+}
+
+/** Точка кривой запоминания: день и доля удержания в процентах. */
+export interface RetentionPoint {
+  readonly day: number;
+  readonly retention: number;
+}
+
+/** Сегмент кривой интервального повторения (между двумя повторениями). */
+export interface RetentionSegment {
+  readonly index: number;
+  readonly points: readonly RetentionPoint[];
 }

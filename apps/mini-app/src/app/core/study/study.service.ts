@@ -8,7 +8,7 @@ import {
 import { Card } from '../models/interfaces';
 import { MemoStore } from '../store/memo-store.service';
 import { formatDelay } from '../utils/format';
-import { GradeOption, StudyQueueSummary } from './interfaces';
+import { CardStateLabel, GradeOption, StudyQueueSummary } from './interfaces';
 
 const GRADE_LABELS: Readonly<Record<ReviewGrade, string>> = {
   again: 'Забыл',
@@ -28,15 +28,7 @@ export class StudyService {
    * deckId === null — все активные колоды.
    */
   buildQueue(deckId: string | null, now: number): readonly Card[] {
-    const activeDeckIds = new Set(
-      this.store
-        .decks()
-        .filter((deck) => (deckId ? deck.id === deckId : deck.isActive))
-        .map((deck) => deck.id)
-    );
-    const cards = this.store
-      .cards()
-      .filter((card) => activeDeckIds.has(card.deckId));
+    const cards = this.scopedCards(deckId);
 
     const learning = cards
       .filter(
@@ -63,6 +55,42 @@ export class StudyService {
       .slice(0, newAllowance);
 
     return [...learning, ...review, ...fresh];
+  }
+
+  /** Все карточки области повторения: одна колода или все активные колоды. */
+  scopedCards(deckId: string | null): readonly Card[] {
+    const deckIds = new Set(
+      this.store
+        .decks()
+        .filter((deck) => (deckId ? deck.id === deckId : deck.isActive))
+        .map((deck) => deck.id)
+    );
+    return this.store.cards().filter((card) => deckIds.has(card.deckId));
+  }
+
+  /** «Повторить все карточки»: вся область, отсортированная по сроку — ближайшие первыми. */
+  buildFullQueue(deckId: string | null): readonly Card[] {
+    return [...this.scopedCards(deckId)].sort(byDueAt);
+  }
+
+  /** Карточки для режима Memo (просмотр без оценок) в порядке добавления. */
+  memoCards(deckId: string | null): readonly Card[] {
+    return [...this.scopedCards(deckId)].sort((a, b) => a.createdAt - b.createdAt);
+  }
+
+  describeState(card: Card, now: number): CardStateLabel {
+    const { state, dueAt } = card.scheduling;
+    if (state === 'new') {
+      return { text: 'Новая', tone: 'info' };
+    }
+    if (state === 'learning' || state === 'relearning') {
+      return dueAt <= now
+        ? { text: 'Учится · сейчас', tone: 'warning' }
+        : { text: `Учится · ${formatDelay(dueAt - now)}`, tone: 'warning' };
+    }
+    return dueAt <= now
+      ? { text: 'К повторению', tone: 'accent' }
+      : { text: `Через ${formatDelay(dueAt - now)}`, tone: 'muted' };
   }
 
   summarize(queue: readonly Card[]): StudyQueueSummary {

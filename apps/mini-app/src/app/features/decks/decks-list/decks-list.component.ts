@@ -6,7 +6,9 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TelegramService } from '@memo/shared/telegram';
+import { Deck } from '../../../core/models/interfaces';
 import { MemoStore } from '../../../core/store/memo-store.service';
+import { ToastService } from '../../../core/toast/toast.service';
 import { formatCount } from '../../../core/utils/format';
 import { EmptyStateComponent } from '../../../ui/empty-state/empty-state.component';
 import { IconComponent } from '../../../ui/icon/icon.component';
@@ -25,6 +27,7 @@ export class DecksListComponent {
   private readonly store = inject(MemoStore);
   private readonly router = inject(Router);
   private readonly telegram = inject(TelegramService);
+  private readonly toast = inject(ToastService);
 
   readonly items = computed<readonly DeckListItem[]>(() =>
     this.store.decks().map((deck) => ({
@@ -33,9 +36,30 @@ export class DecksListComponent {
     }))
   );
 
+  readonly activeCount = computed(
+    () => this.store.decks().filter((deck) => deck.isActive).length
+  );
+
   openDeck(deckId: string): void {
     this.telegram.hapticSelection();
     void this.router.navigate(['/decks', deckId]);
+  }
+
+  /** Молния: сразу в тренировку этой колоды. */
+  train(event: Event, deckId: string): void {
+    event.stopPropagation();
+    this.telegram.hapticImpact('medium');
+    void this.router.navigate(['/drilling'], { queryParams: { deckId } });
+  }
+
+  /** Тумблер: включить/выключить колоду в Drilling list. */
+  async toggleActive(event: Event, deck: Deck): Promise<void> {
+    event.stopPropagation();
+    this.telegram.hapticSelection();
+    await this.store.setDeckActive(deck.id, !deck.isActive);
+    this.toast.show(
+      deck.isActive ? 'Колода убрана из Drilling list' : 'Колода добавлена в Drilling list'
+    );
   }
 
   formatTotal(count: number): string {

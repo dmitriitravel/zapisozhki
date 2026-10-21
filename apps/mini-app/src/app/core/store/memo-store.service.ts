@@ -111,7 +111,7 @@ export class MemoStore {
       title: draft.title.trim(),
       description: draft.description.trim(),
       emoji: draft.emoji,
-      isActive: true,
+      isActive: draft.isActive,
       libraryId,
       createdAt: now,
       updatedAt: now,
@@ -131,6 +131,7 @@ export class MemoStore {
       title: draft.title.trim(),
       description: draft.description.trim(),
       emoji: draft.emoji,
+      isActive: draft.isActive,
       updatedAt: Date.now(),
     };
     await this.repository.putDeck(updated);
@@ -240,6 +241,25 @@ export class MemoStore {
     ]);
     this.replaceCard(updated);
     this.todayLogState.update((log) => log.filter((entry) => entry.cardId !== cardId));
+  }
+
+  /** Сбрасывает прогресс всех карточек колоды: они снова становятся новыми. */
+  async resetDeckProgress(deckId: string): Promise<void> {
+    const now = Date.now();
+    const cards = this.cardsByDeck().get(deckId) ?? [];
+    if (cards.length === 0) {
+      return;
+    }
+    const updated: readonly Card[] = cards.map((card) => ({
+      ...card,
+      scheduling: createInitialSchedulingState(now),
+      updatedAt: now,
+    }));
+    await this.repository.putCards(updated);
+    await Promise.all(cards.map((card) => this.repository.deleteReviewLogForCard(card.id)));
+    const byId = new Map(updated.map((card) => [card.id, card]));
+    this.cardsState.update((all) => all.map((card) => byId.get(card.id) ?? card));
+    this.todayLogState.update((log) => log.filter((entry) => entry.deckId !== deckId));
   }
 
   /** Сохраняет результат ответа: новое расписание карточки + запись в журнал. */

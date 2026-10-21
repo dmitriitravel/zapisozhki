@@ -1,46 +1,86 @@
-.greeting {
-  margin: 0 0 12px;
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
 }
 
-.stats {
+.profile__body {
+  min-width: 0;
+}
+
+.profile__name {
+  font-size: 18px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile__hint {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.tiles {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
-.stats__item {
+.tile {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   padding: 14px;
-  border-radius: var(--memo-radius);
-  background: var(--memo-section-bg);
 }
 
-.stats__value {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.tile__icon {
+  margin-bottom: 4px;
+}
+
+.tile__value {
   font-size: 26px;
   font-weight: 700;
+  line-height: 1.1;
 }
 
-.stats__value--success {
-  color: var(--memo-success);
+.tile__total {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--memo-hint);
 }
 
-.stats__value--accent {
+.tile__label {
+  font-size: 12px;
+  color: var(--memo-hint);
+}
+
+.tile--accent .tile__icon,
+.tile--accent .tile__value {
   color: var(--memo-accent);
 }
 
-.stats__value--flame {
-  color: #e2622b;
+.tile--success .tile__icon,
+.tile--success .tile__value {
+  color: var(--memo-success);
 }
 
-.stats__label {
-  font-size: 12px;
-  color: var(--memo-hint);
+.tile--warning .tile__icon,
+.tile--warning .tile__value {
+  color: var(--memo-warning);
+}
+
+.tile--info .tile__icon,
+.tile--info .tile__value {
+  color: var(--memo-info);
+}
+
+.block {
+  display: block;
+  margin-bottom: 16px;
 }
 
 .stepper {
@@ -77,6 +117,30 @@
   min-width: 32px;
   text-align: center;
   font-weight: 600;
+}
+
+.rate-row__slider {
+  width: 100%;
+  margin: 10px 0 2px;
+  accent-color: var(--memo-accent);
+}
+
+.speaking {
+  color: var(--memo-accent);
+}
+
+.name-input {
+  width: 100%;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  outline: none;
+}
+
+.name-input::placeholder {
+  color: var(--memo-hint);
 }
 
 .row-icon {

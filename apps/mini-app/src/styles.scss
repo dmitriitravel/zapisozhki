@@ -1,24 +1,31 @@
 /*
  * Глобальные стили мини-приложения.
- * Цвета берутся из темы Telegram (--tg-theme-*), вне Telegram используются fallback-значения
- * в тёплой палитре, близкой к оригинальному MemoDremo.
+ * Палитра совпадает с Mac-версией MemoDremo: кремовый фон, белые карточки,
+ * оранжевый акцент, тёмно-синие круглые кнопки. Светлая/тёмная схема берётся
+ * из Telegram (атрибут data-color-scheme выставляет TelegramService).
  */
 :root {
-  --memo-bg: var(--tg-theme-bg-color, #faf1ea);
-  --memo-secondary-bg: var(--tg-theme-secondary-bg-color, #f1e5db);
-  --memo-section-bg: var(--tg-theme-section-bg-color, #ffffff);
-  --memo-text: var(--tg-theme-text-color, #1e1b18);
-  --memo-hint: var(--tg-theme-hint-color, #8d8580);
-  --memo-link: var(--tg-theme-link-color, #d9822b);
-  --memo-accent: var(--tg-theme-accent-text-color, #e08a2e);
-  --memo-button: var(--tg-theme-button-color, #e08a2e);
-  --memo-button-text: var(--tg-theme-button-text-color, #ffffff);
-  --memo-destructive: var(--tg-theme-destructive-text-color, #d64541);
-  --memo-divider: rgba(128, 128, 128, 0.18);
-  --memo-success: #2f9e63;
-  --memo-warning: #d99a2b;
+  --memo-bg: #f8f0e6;
+  --memo-secondary-bg: #f1e8dd;
+  --memo-section-bg: #ffffff;
+  --memo-text: #1e2328;
+  --memo-hint: #6b7078;
+  --memo-link: #f08a24;
+  --memo-accent: #f08a24;
+  --memo-button: #f08a24;
+  --memo-button-text: #ffffff;
+  --memo-navy: #2f3b4b;
+  --memo-on-navy: #ffffff;
+  --memo-destructive: #ec5b57;
+  --memo-divider: #e8ded2;
+  --memo-success: #3db871;
+  --memo-warning: #f0a03c;
+  --memo-info: #3f86e0;
+  --memo-shadow: rgba(60, 40, 20, 0.1);
 
   --memo-radius: 16px;
+  --memo-card-radius: 28px;
+  --memo-control-radius: 14px;
   --memo-tab-bar-height: 60px;
   --memo-safe-top: var(--tg-content-safe-area-inset-top, 0px);
   --memo-safe-bottom: var(
@@ -28,12 +35,23 @@
 }
 
 :root[data-color-scheme='dark'] {
-  --memo-bg: var(--tg-theme-bg-color, #1c1a18);
-  --memo-secondary-bg: var(--tg-theme-secondary-bg-color, #2a2724);
-  --memo-section-bg: var(--tg-theme-section-bg-color, #26231f);
-  --memo-text: var(--tg-theme-text-color, #f3ede7);
-  --memo-hint: var(--tg-theme-hint-color, #9a918a);
-  --memo-divider: rgba(255, 255, 255, 0.1);
+  --memo-bg: #1c1a18;
+  --memo-secondary-bg: #332f2b;
+  --memo-section-bg: #2a2724;
+  --memo-text: #f2ede6;
+  --memo-hint: #a9a39b;
+  --memo-link: #f5a04a;
+  --memo-accent: #f5a04a;
+  --memo-button: #f5a04a;
+  --memo-button-text: #14181e;
+  --memo-navy: #8fa6c2;
+  --memo-on-navy: #14181e;
+  --memo-destructive: #f2746f;
+  --memo-divider: #3c3732;
+  --memo-success: #4fd08a;
+  --memo-warning: #f5b45c;
+  --memo-info: #6ca3f0;
+  --memo-shadow: rgba(0, 0, 0, 0.35);
   color-scheme: dark;
 }
 
@@ -122,6 +140,11 @@ a {
   color: var(--memo-text);
 }
 
+.memo-btn--navy {
+  background: var(--memo-navy);
+  color: var(--memo-on-navy);
+}
+
 .memo-btn--ghost {
   background: transparent;
   color: var(--memo-link);
@@ -161,13 +184,85 @@ a {
 }
 
 .memo-icon-btn--filled {
-  background: var(--memo-text);
-  color: var(--memo-bg);
+  background: var(--memo-navy);
+  color: var(--memo-on-navy);
 }
 
 .memo-icon-btn--filled:active {
   opacity: 0.8;
-  background: var(--memo-text);
+  background: var(--memo-navy);
+}
+
+/* Круглая светлая кнопка («…», динамик) — как RoundMutedButtonStyle в Mac-версии */
+.memo-icon-btn--muted {
+  background: var(--memo-secondary-bg);
+  color: var(--memo-text);
+}
+
+.memo-icon-btn--muted:active {
+  opacity: 0.8;
+  background: var(--memo-secondary-bg);
+}
+
+.memo-icon-btn--small {
+  width: 32px;
+  height: 32px;
+}
+
+.memo-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Капсульный переключатель режимов (Memo / Dremo) */
+.memo-mode-switch {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--memo-secondary-bg);
+}
+
+.memo-mode-switch__item {
+  min-width: 104px;
+  height: 32px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--memo-hint);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.memo-mode-switch__item--active {
+  background: var(--memo-navy);
+  color: var(--memo-on-navy);
+}
+
+/* Аватар с инициалами на оранжевом градиенте */
+.memo-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f7b267, #f08a24);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.memo-avatar--large {
+  width: 56px;
+  height: 56px;
+  font-size: 20px;
 }
 
 /* Поля ввода */
@@ -213,6 +308,7 @@ a {
   border-radius: var(--memo-radius);
   overflow: hidden;
   margin-bottom: 16px;
+  box-shadow: 0 2px 10px var(--memo-shadow);
 }
 
 .memo-section__title {
@@ -302,6 +398,28 @@ a {
 .memo-badge--warning {
   background: color-mix(in srgb, var(--memo-warning) 20%, transparent);
   color: var(--memo-warning);
+}
+
+.memo-badge--info {
+  background: color-mix(in srgb, var(--memo-info) 16%, transparent);
+  color: var(--memo-info);
+}
+
+.memo-badge--danger {
+  background: color-mix(in srgb, var(--memo-destructive) 16%, transparent);
+  color: var(--memo-destructive);
+}
+
+.memo-badge--navy {
+  background: var(--memo-navy);
+  color: var(--memo-on-navy);
+}
+
+/* Карточка-секция с мягкой тенью (SectionCard в Mac-версии) */
+.memo-card {
+  background: var(--memo-section-bg);
+  border-radius: var(--memo-radius);
+  box-shadow: 0 6px 20px var(--memo-shadow);
 }
 
 /* Переключатель */

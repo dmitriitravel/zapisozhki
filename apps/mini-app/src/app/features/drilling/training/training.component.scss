@@ -1,0 +1,90 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.avatar-btn {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.scope-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 56vw;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.scope-btn:disabled {
+  cursor: default;
+}
+
+.scope-btn:not(:disabled):active {
+  background: var(--memo-secondary-bg);
+}
+
+.scope-btn__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 16px 0;
+}
+
+.toolbar__side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar__position {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--memo-hint);
+  white-space: nowrap;
+}
+
+.list-btn {
+  position: relative;
+}
+
+.list-btn__count {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--memo-accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding-top: 12px;
+}

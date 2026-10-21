@@ -1,33 +1,52 @@
 <memo-page-header title="Ещё" />
 
 <div class="memo-page">
-  @if (userName(); as name) {
-    <p class="memo-hint greeting">Привет, {{ name }}!</p>
-  }
-
-  @if (studyStats(); as stats) {
-    <div class="stats">
-      <div class="stats__item">
-        <span class="stats__value">{{ stats.totalCards }}</span>
-        <span class="stats__label">карточек</span>
-      </div>
-      <div class="stats__item">
-        <span class="stats__value stats__value--success">{{ stats.learnedCards }}</span>
-        <span class="stats__label">выучено</span>
-      </div>
-      <div class="stats__item">
-        <span class="stats__value stats__value--accent">{{ stats.reviewedToday }}</span>
-        <span class="stats__label">ответов сегодня</span>
-      </div>
-      <div class="stats__item">
-        <span class="stats__value stats__value--flame">
-          <memo-icon name="flame" [size]="20" />
-          {{ stats.streakDays }}
-        </span>
-        <span class="stats__label">дней подряд</span>
+  <div class="profile memo-card">
+    <memo-avatar [initials]="initials()" [photoUrl]="photoUrl()" [large]="true" />
+    <div class="profile__body">
+      <div class="profile__name">{{ displayName() || 'Привет!' }}</div>
+      <div class="profile__hint memo-hint">
+        @if (studyStats(); as stats) {
+          @if (stats.streakDays > 0) {
+            Серия: {{ formatDays(stats.streakDays) }} подряд — так держать!
+          } @else {
+            Повторите карточки сегодня, чтобы начать серию.
+          }
+        } @else {
+          Загружаем статистику…
+        }
       </div>
     </div>
+  </div>
+
+  @if (studyStats(); as stats) {
+    <div class="tiles">
+      <div class="tile memo-card tile--accent">
+        <memo-icon name="flame" [size]="20" class="tile__icon" />
+        <span class="tile__value">{{ stats.streakDays }}</span>
+        <span class="tile__label">Серия подряд</span>
+      </div>
+      <div class="tile memo-card tile--success">
+        <memo-icon name="check" [size]="20" class="tile__icon" />
+        <span class="tile__value">{{ stats.reviewedToday }}</span>
+        <span class="tile__label">Повторений сегодня</span>
+      </div>
+      <div class="tile memo-card tile--warning">
+        <memo-icon name="clock" [size]="20" class="tile__icon" />
+        <span class="tile__value">{{ stats.dueToday }}</span>
+        <span class="tile__label">К повторению</span>
+      </div>
+      <div class="tile memo-card tile--info">
+        <memo-icon name="graduation-cap" [size]="20" class="tile__icon" />
+        <span class="tile__value">{{ stats.learnedCards }} <span class="tile__total">/ {{ stats.totalCards }}</span></span>
+        <span class="tile__label">Выучено / всего</span>
+      </div>
+    </div>
+
+    <memo-activity-chart class="block" [points]="stats.dailyReviews" />
   }
+
+  <memo-retention-charts class="block" />
 
   <div class="memo-section">
     <div class="memo-section__title">Обучение</div>
@@ -46,13 +65,78 @@
         </button>
       </div>
     </div>
-    <button type="button" class="memo-row" (click)="toggleSwipe()">
+    <button type="button" class="memo-row" (click)="toggle('swipeToRate')">
       <div class="memo-row__body">
         <div class="memo-row__title">Оценка свайпом</div>
-        <div class="memo-row__subtitle">Влево — «Забыл», вправо — «Помню»</div>
+        <div class="memo-row__subtitle">Вправо — «Есть», влево — «Ещё раз»</div>
       </div>
       <span class="memo-switch" [class.memo-switch--on]="settings().swipeToRate"></span>
     </button>
+    <button type="button" class="memo-row" (click)="toggle('imageOnlyFront')">
+      <div class="memo-row__body">
+        <div class="memo-row__title">Только картинка на лицевой стороне</div>
+        <div class="memo-row__subtitle">Если у карточки есть изображение, вопрос показывается после переворота</div>
+      </div>
+      <span class="memo-switch" [class.memo-switch--on]="settings().imageOnlyFront"></span>
+    </button>
+  </div>
+
+  <div class="memo-section">
+    <div class="memo-section__title">Озвучка</div>
+    @if (canSpeak) {
+      <button type="button" class="memo-row" (click)="toggle('autoSpeak')">
+        <div class="memo-row__body">
+          <div class="memo-row__title">Озвучивать при перевороте</div>
+          <div class="memo-row__subtitle">Вопрос произносится автоматически, когда вы открываете ответ</div>
+        </div>
+        <span class="memo-switch" [class.memo-switch--on]="settings().autoSpeak"></span>
+      </button>
+      <div class="memo-row memo-row--static rate-row">
+        <div class="memo-row__body">
+          <div class="memo-row__title">Скорость речи · {{ speechRateLabel() }}</div>
+          <input
+            class="rate-row__slider"
+            type="range"
+            aria-label="Скорость речи"
+            [min]="speechRateMin"
+            [max]="speechRateMax"
+            [step]="speechRateStep"
+            [value]="settings().speechRate"
+            (input)="setSpeechRate($any($event.target).value)"
+          />
+        </div>
+        <button type="button" class="memo-icon-btn memo-icon-btn--muted" [class.speaking]="isSpeaking()" aria-label="Проверить озвучку" (click)="testSpeech()">
+          <memo-icon [name]="isSpeaking() ? 'volume-active' : 'volume'" [size]="22" />
+        </button>
+      </div>
+    } @else {
+      <div class="memo-row memo-row--static">
+        <memo-icon name="volume" [size]="22" class="row-icon" />
+        <div class="memo-row__body">
+          <div class="memo-row__title">Озвучка недоступна</div>
+          <div class="memo-row__subtitle">Этот браузер не поддерживает синтез речи</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="memo-section">
+    <div class="memo-section__title">Профиль</div>
+    <label class="memo-row memo-row--static">
+      <memo-icon name="user" [size]="22" class="row-icon" />
+      <div class="memo-row__body">
+        <div class="memo-row__title">Имя</div>
+        <input
+          class="name-input"
+          type="text"
+          placeholder="Как к вам обращаться"
+          autocomplete="name"
+          [attr.maxlength]="userNameMaxLength"
+          [value]="settings().userName"
+          (input)="setUserName($any($event.target).value)"
+        />
+      </div>
+    </label>
   </div>
 
   <div class="memo-section">
@@ -89,7 +173,7 @@
       <memo-icon name="download" [size]="22" class="row-icon" />
       <div class="memo-row__body">
         <div class="memo-row__title">Экспорт в файл</div>
-        <div class="memo-row__subtitle">Полная копия (JSON) вместе с изображениями</div>
+        <div class="memo-row__subtitle">Полная копия (JSON) вместе с изображениями — совместима с Mac-версией</div>
       </div>
       @if (operation() === 'export') {
         <span class="memo-spinner row-spinner"></span>

@@ -15,33 +15,58 @@
     <div class="list">
       @for (item of items(); track item.entry.id) {
         <div class="entry">
-          <span class="entry__emoji">{{ item.entry.emoji }}</span>
-          <div class="entry__body">
-            <div class="entry__title">{{ item.entry.title }}</div>
-            <div class="entry__description">{{ item.entry.description }}</div>
-            <div class="entry__meta">
-              <span class="memo-badge">{{ formatCards(item.entry.cardCount) }}</span>
-              <span class="memo-badge">{{ item.entry.language }}</span>
+          <div class="entry__head">
+            <span class="entry__emoji">{{ item.entry.emoji }}</span>
+            <div class="entry__body">
+              <div class="entry__title">{{ item.entry.title }}</div>
+              <div class="entry__description">{{ item.entry.description }}</div>
+              <div class="entry__meta">
+                <span class="memo-badge">{{ formatCards(item.entry.cardCount) }}</span>
+                <span class="memo-badge">{{ item.entry.language }}</span>
+                @if (item.installedDeckId) {
+                  <span class="memo-badge memo-badge--success">
+                    <memo-icon name="check" [size]="12" />
+                    Добавлено
+                  </span>
+                }
+              </div>
             </div>
           </div>
-          <button
-            type="button"
-            class="memo-btn memo-btn--small"
-            [class.memo-btn--primary]="!item.installed"
-            [class.memo-btn--secondary]="item.installed"
-            [disabled]="installingId() !== null"
-            (click)="install(item.entry)"
-          >
-            @if (installingId() === item.entry.id) {
-              <span class="memo-spinner entry__spinner"></span>
-            } @else if (item.installed) {
-              <memo-icon name="check" [size]="16" />
-              Ещё раз
+          <div class="entry__actions">
+            @if (item.installedDeckId; as deckId) {
+              <button type="button" class="memo-btn memo-btn--navy memo-btn--small" (click)="openDeck(deckId)">
+                <memo-icon name="folder" [size]="16" />
+                Открыть
+              </button>
+              <button
+                type="button"
+                class="memo-btn memo-btn--secondary memo-btn--small"
+                [disabled]="installingId() !== null"
+                (click)="install(item.entry)"
+              >
+                @if (installingId() === item.entry.id) {
+                  <span class="memo-spinner entry__spinner"></span>
+                } @else {
+                  <memo-icon name="refresh-cw" [size]="16" />
+                }
+                Ещё раз
+              </button>
             } @else {
-              <memo-icon name="plus" [size]="16" />
-              Добавить
+              <button
+                type="button"
+                class="memo-btn memo-btn--navy memo-btn--small"
+                [disabled]="installingId() !== null"
+                (click)="install(item.entry)"
+              >
+                @if (installingId() === item.entry.id) {
+                  <span class="memo-spinner entry__spinner"></span>
+                } @else {
+                  <memo-icon name="plus" [size]="16" />
+                }
+                Добавить
+              </button>
             }
-          </button>
+          </div>
         </div>
       } @empty {
         <memo-empty-state title="Библиотека пуста">

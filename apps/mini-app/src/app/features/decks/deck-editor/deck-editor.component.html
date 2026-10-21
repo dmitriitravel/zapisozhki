@@ -9,7 +9,16 @@
 
 <form class="memo-page memo-page--no-tabs" (submit)="$event.preventDefault(); save()">
   <div class="preview">
-    <span class="preview__emoji">{{ form().emoji }}</span>
+    <label class="preview__emoji">
+      <input
+        class="preview__input"
+        type="text"
+        aria-label="Эмодзи колоды"
+        [value]="form().emoji"
+        (input)="setCustomEmoji($any($event.target).value)"
+      />
+    </label>
+    <span class="memo-hint preview__hint">Нажмите, чтобы ввести свой эмодзи</span>
   </div>
 
   <div class="emojis">
@@ -30,7 +39,7 @@
     <input
       class="memo-input"
       type="text"
-      placeholder="Например, «Столицы мира»"
+      placeholder="Например, «Английский — фразы»"
       maxlength="80"
       autocomplete="off"
       [value]="form().title"
@@ -50,7 +59,18 @@
     ></textarea>
   </label>
 
-  <button type="submit" class="memo-btn memo-btn--primary memo-btn--block" [disabled]="!canSave()">
+  <div class="memo-section">
+    <button type="button" class="memo-row" (click)="toggleActive()">
+      <memo-icon name="zap" [size]="22" class="row-icon" />
+      <div class="memo-row__body">
+        <div class="memo-row__title">В Drilling list</div>
+        <div class="memo-row__subtitle">Карточки колоды попадают в общее повторение</div>
+      </div>
+      <span class="memo-switch" [class.memo-switch--on]="form().isActive"></span>
+    </button>
+  </div>
+
+  <button type="submit" class="memo-btn memo-btn--navy memo-btn--block" [disabled]="!canSave()">
     {{ isEdit() ? 'Сохранить' : 'Создать колоду' }}
   </button>
 </form>

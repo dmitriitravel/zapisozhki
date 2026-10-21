@@ -5,17 +5,12 @@ export const appRoutes: Route[] = [
   {
     path: 'drilling',
     loadComponent: () =>
-      import('./features/drilling/drilling-list/drilling-list.component').then(
-        (m) => m.DrillingListComponent
+      import('./features/drilling/training/training.component').then(
+        (m) => m.TrainingComponent
       ),
   },
-  {
-    path: 'drilling/session',
-    loadComponent: () =>
-      import('./features/drilling/study-session/study-session.component').then(
-        (m) => m.StudySessionComponent
-      ),
-  },
+  // Старый адрес сессии — на экран тренировки (query-параметры сохраняются).
+  { path: 'drilling/session', redirectTo: 'drilling' },
   {
     path: 'decks',
     loadComponent: () =>

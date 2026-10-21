@@ -3,6 +3,7 @@ import { DAY_MS, startOfLocalDay } from '@memo/shared/spaced-repetition';
 import { MemoRepository } from '../db/memo-repository.service';
 import { StudyStats } from '../models/interfaces';
 import { MemoStore } from '../store/memo-store.service';
+import { dailyReviews } from './retention';
 
 @Injectable({ providedIn: 'root' })
 export class StatsService {
@@ -12,6 +13,7 @@ export class StatsService {
   async compute(): Promise<StudyStats> {
     const now = Date.now();
     const log = await this.repository.getAllReviewLog();
+    const timestamps = log.map((entry) => entry.reviewedAt);
     const totals = Array.from(this.store.deckStats().values()).reduce(
       (acc, stats) => ({
         totalCards: acc.totalCards + stats.total,
@@ -23,10 +25,8 @@ export class StatsService {
     return {
       ...totals,
       reviewedToday: this.store.reviewsToday(),
-      streakDays: computeStreak(
-        log.map((entry) => entry.reviewedAt),
-        now
-      ),
+      streakDays: computeStreak(timestamps, now),
+      dailyReviews: dailyReviews(timestamps, now),
     };
   }
 }

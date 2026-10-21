@@ -22,30 +22,45 @@
       Открыть библиотеку
     </a>
   } @else {
+    <p class="memo-hint intro">
+      Тумблер включает колоду в Drilling list — общее повторение. Молния — тренировать только эту колоду.
+      В Drilling list: {{ activeCount() }} из {{ items().length }}.
+    </p>
     <div class="decks">
       @for (item of items(); track item.deck.id) {
-        <button type="button" class="deck" [class.deck--inactive]="!item.deck.isActive" (click)="openDeck(item.deck.id)">
+        <div class="deck" [class.deck--inactive]="!item.deck.isActive" (click)="openDeck(item.deck.id)">
           <span class="deck__emoji">{{ item.deck.emoji }}</span>
           <span class="deck__body">
             <span class="deck__title">{{ item.deck.title }}</span>
-            <span class="deck__meta">{{ formatTotal(item.stats.total) }}</span>
             <span class="deck__badges">
-              @if (item.stats.dueCount > 0) {
-                <span class="memo-badge memo-badge--warning">{{ item.stats.dueCount }} повторить</span>
-              }
+              <span class="memo-badge">{{ formatTotal(item.stats.total) }}</span>
               @if (item.stats.newCount > 0) {
-                <span class="memo-badge memo-badge--accent">{{ item.stats.newCount }} новых</span>
+                <span class="memo-badge memo-badge--info">Новые {{ item.stats.newCount }}</span>
+              }
+              @if (item.stats.dueCount > 0) {
+                <span class="memo-badge memo-badge--accent">К повторению {{ item.stats.dueCount }}</span>
               }
               @if (item.stats.learnedCount > 0) {
-                <span class="memo-badge memo-badge--success">{{ item.stats.learnedCount }} выучено</span>
-              }
-              @if (!item.deck.isActive) {
-                <span class="memo-badge">на паузе</span>
+                <span class="memo-badge memo-badge--success">Выучено {{ item.stats.learnedCount }}</span>
               }
             </span>
           </span>
-          <memo-icon name="chevron-right" [size]="20" class="deck__chevron" />
-        </button>
+          <span class="deck__controls">
+            <button
+              type="button"
+              class="memo-switch"
+              role="switch"
+              [class.memo-switch--on]="item.deck.isActive"
+              [attr.aria-checked]="item.deck.isActive"
+              aria-label="В Drilling list"
+              (click)="toggleActive($event, item.deck)"
+            ></button>
+            <button type="button" class="memo-icon-btn memo-icon-btn--filled" aria-label="Тренировать колоду" (click)="train($event, item.deck.id)">
+              <memo-icon name="zap" [size]="20" />
+            </button>
+            <memo-icon name="chevron-right" [size]="20" class="deck__chevron" />
+          </span>
+        </div>
       }
     </div>
   }

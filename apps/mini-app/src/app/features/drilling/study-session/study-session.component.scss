@@ -1,53 +1,64 @@
 :host {
   display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh;
-}
-
-.counter {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--memo-hint);
-  padding-right: 6px;
-}
-
-.progress {
-  height: 4px;
-  margin: 0 16px;
-  border-radius: 2px;
-  background: var(--memo-divider);
-  overflow: hidden;
-}
-
-.progress__bar {
-  height: 100%;
-  background: var(--memo-accent);
-  transition: width 0.3s ease;
-}
-
-.session {
-  display: flex;
   flex: 1;
   flex-direction: column;
-  padding-top: 16px;
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hint__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hint__icon--filled {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--memo-navy);
+  color: var(--memo-on-navy);
 }
 
 .stage {
+  position: relative;
   display: flex;
   flex: 1;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
+  min-height: 46vh;
+  max-height: 560px;
+  margin-bottom: 32px;
   perspective: 1200px;
   touch-action: pan-y;
+}
+
+/* Следующая карточка в стопке */
+.peek {
+  position: absolute;
+  top: 16px;
+  bottom: -16px;
+  left: 3%;
+  right: 3%;
+  border-radius: var(--memo-card-radius);
+  background: var(--memo-section-bg);
+  box-shadow: 0 10px 30px var(--memo-shadow);
+  opacity: 0.9;
 }
 
 .card {
   position: relative;
   width: 100%;
-  min-height: 46vh;
+  min-height: inherit;
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
   transition: transform 0.25s ease;
 }
 
@@ -55,9 +66,14 @@
   transition: none;
 }
 
+.card--flying {
+  transition: transform 0.18s ease-in;
+}
+
 .card__inner {
   display: grid;
   width: 100%;
+  height: 100%;
   min-height: inherit;
   transform-style: preserve-3d;
   transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
@@ -70,107 +86,55 @@
 .card__face {
   grid-area: 1 / 1;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 24px 20px;
-  border-radius: 24px;
+  min-height: inherit;
+  border-radius: var(--memo-card-radius);
   background: var(--memo-section-bg);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 34px var(--memo-shadow);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  text-align: center;
   overflow: hidden;
 }
 
 .card__face--back {
   transform: rotateY(180deg);
-  justify-content: flex-start;
-  overflow-y: auto;
 }
 
-.card__image {
-  width: 100%;
-}
-
-.card__image--small ::ng-deep .image {
-  max-height: 22vh;
-}
-
-.card__question {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1.3;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.card__question--small {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--memo-hint);
-}
-
-.card__divider {
-  width: 48px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--memo-accent);
-}
-
-.card__answer {
-  margin: 0;
-  font-size: 20px;
-  line-height: 1.4;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.card__hint {
+/* Штампы оценки при свайпе */
+.stamp {
   position: absolute;
-  bottom: 16px;
-  left: 0;
-  right: 0;
-  font-size: 12px;
-  color: var(--memo-hint);
-}
-
-.card__stamp {
-  position: absolute;
-  top: 20px;
-  padding: 6px 12px;
+  top: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
   border: 3px solid;
   border-radius: 10px;
   font-size: 18px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 900;
+  letter-spacing: 0.08em;
   opacity: 0;
-  transition: opacity 0.15s;
   pointer-events: none;
+  z-index: 2;
 }
 
-.card__stamp--left {
-  right: 20px;
-  color: var(--memo-destructive);
-  transform: rotate(12deg);
-}
-
-.card__stamp--right {
-  left: 20px;
+.stamp--right {
+  left: 22px;
   color: var(--memo-success);
-  transform: rotate(-12deg);
+  border-color: var(--memo-success);
+  background: color-mix(in srgb, var(--memo-success) 12%, var(--memo-section-bg));
+  transform: rotate(-14deg);
 }
 
-.card--left .card__stamp--left,
-.card--right .card__stamp--right {
-  opacity: 1;
+.stamp--left {
+  right: 22px;
+  color: var(--memo-destructive);
+  border-color: var(--memo-destructive);
+  background: color-mix(in srgb, var(--memo-destructive) 12%, var(--memo-section-bg));
+  transform: rotate(14deg);
 }
 
 .controls {
-  padding-top: 20px;
+  padding-bottom: 8px;
 }
 
 .controls__hint {
@@ -192,8 +156,9 @@
   gap: 2px;
   padding: 10px 4px;
   border: 0;
-  border-radius: 14px;
+  border-radius: var(--memo-control-radius);
   background: var(--memo-section-bg);
+  box-shadow: 0 2px 10px var(--memo-shadow);
   cursor: pointer;
   transition: transform 0.1s;
 }
@@ -225,7 +190,7 @@
 }
 
 .grade--easy .grade__label {
-  color: var(--memo-link);
+  color: var(--memo-info);
 }
 
 .finish {
@@ -235,12 +200,29 @@
   align-items: center;
   justify-content: center;
   gap: 14px;
-  text-align: center;
   padding: 24px 0;
+  text-align: center;
 }
 
 .finish__icon {
-  font-size: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--memo-accent) 16%, transparent);
+  color: var(--memo-accent);
+}
+
+.finish__icon--muted {
+  background: var(--memo-secondary-bg);
+  color: var(--memo-hint);
+}
+
+.finish__icon--success {
+  background: color-mix(in srgb, var(--memo-success) 16%, transparent);
+  color: var(--memo-success);
 }
 
 .finish__title {
@@ -248,36 +230,19 @@
   font-size: 22px;
 }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  width: 100%;
-  margin: 8px 0 16px;
+.finish__text {
+  margin: 0;
 }
 
-.stats__item {
+.results {
   display: flex;
-  flex-direction: column;
-  padding: 14px 8px;
-  border-radius: 14px;
-  background: var(--memo-section-bg);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0 12px;
 }
 
-.stats__value {
-  font-size: 26px;
-  font-weight: 700;
-}
-
-.stats__item--again .stats__value {
-  color: var(--memo-destructive);
-}
-
-.stats__item--good .stats__value {
-  color: var(--memo-success);
-}
-
-.stats__label {
-  font-size: 12px;
-  color: var(--memo-hint);
+.results .memo-badge {
+  padding: 6px 12px;
+  font-size: 14px;
 }

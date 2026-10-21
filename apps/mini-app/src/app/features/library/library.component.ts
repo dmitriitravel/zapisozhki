@@ -41,7 +41,7 @@ export class LibraryComponent implements OnInit {
   readonly items = computed<readonly LibraryListItem[]>(() =>
     this.library.entries().map((entry) => ({
       entry,
-      installed: this.library.isInstalled(entry.id),
+      installedDeckId: this.library.getInstalledDeckId(entry.id),
     }))
   );
 
@@ -49,6 +49,7 @@ export class LibraryComponent implements OnInit {
     void this.load();
   }
 
+  /** «Добавить» / «Ещё раз»: копия колоды появляется в «Колодах». */
   async install(entry: LibraryIndexEntry): Promise<void> {
     if (this.installingState()) {
       return;
@@ -64,6 +65,11 @@ export class LibraryComponent implements OnInit {
     } finally {
       this.installingState.set(null);
     }
+  }
+
+  openDeck(deckId: string): void {
+    this.telegram.hapticSelection();
+    void this.router.navigate(['/decks', deckId]);
   }
 
   formatCards(count: number): string {

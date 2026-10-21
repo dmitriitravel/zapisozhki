@@ -1,0 +1,71 @@
+<memo-page-header>
+  <button left type="button" class="avatar-btn" aria-label="Профиль и настройки" (click)="goToMore()">
+    <memo-avatar [initials]="initials()" [photoUrl]="photoUrl()" />
+  </button>
+  <button center type="button" class="scope-btn" [disabled]="!hasDecks()" (click)="openScopePicker()">
+    <span class="scope-btn__text">{{ session.scopeTitle() }}</span>
+    @if (hasDecks()) {
+      <memo-icon name="chevron-down" [size]="18" />
+    }
+  </button>
+  <button right type="button" class="memo-icon-btn memo-icon-btn--filled" aria-label="Добавить" (click)="openAddMenu()">
+    <memo-icon name="plus" [size]="24" />
+  </button>
+</memo-page-header>
+
+<div class="toolbar">
+  <div class="memo-mode-switch" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="memo-mode-switch__item"
+      [class.memo-mode-switch__item--active]="session.mode() === 'memo'"
+      [attr.aria-selected]="session.mode() === 'memo'"
+      (click)="setMode('memo')"
+    >
+      Memo
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="memo-mode-switch__item"
+      [class.memo-mode-switch__item--active]="session.mode() === 'dremo'"
+      [attr.aria-selected]="session.mode() === 'dremo'"
+      (click)="setMode('dremo')"
+    >
+      Dremo
+    </button>
+  </div>
+  <div class="toolbar__side">
+    @if (positionLabel(); as label) {
+      <span class="toolbar__position">{{ label }}</span>
+    }
+    <button type="button" class="memo-icon-btn memo-icon-btn--muted list-btn" aria-label="Drilling list" (click)="openList()">
+      <memo-icon name="list" [size]="20" />
+      @if (listCount() > 0) {
+        <span class="list-btn__count">{{ listCount() }}</span>
+      }
+    </button>
+  </div>
+</div>
+
+<div class="memo-page content">
+  @if (session.mode() === 'dremo') {
+    <memo-study-session (menu)="openCardMenu($event)" (speak)="speak($event)" (addCard)="addCard()" />
+  } @else {
+    <memo-memo-view (menu)="openCardMenu($event)" (speak)="speak($event)" (addCard)="addCard()" />
+  }
+</div>
+
+@if (isScopePickerOpen()) {
+  <memo-action-sheet title="Что повторяем" [options]="scopeOptions()" (selected)="selectScope($event)" (closed)="closeScopePicker()" />
+}
+@if (isAddMenuOpen()) {
+  <memo-action-sheet title="Добавить" [options]="addMenuOptions()" (selected)="onAddAction($event)" (closed)="closeAddMenu()" />
+}
+@if (isListOpen()) {
+  <memo-drilling-list-sheet (open)="openCard($event)" (menu)="openCardMenu($event)" (closed)="closeList()" />
+}
+@if (cardMenuTarget(); as card) {
+  <memo-action-sheet [title]="card.question" [options]="cardMenuOptions" (selected)="onCardAction($event)" (closed)="closeCardMenu()" />
+}

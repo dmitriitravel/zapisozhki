@@ -10,7 +10,9 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { TelegramService } from '@memo/shared/telegram';
 import { Card } from '../../../core/models/interfaces';
+import { SpeechService } from '../../../core/speech/speech.service';
 import { MemoStore } from '../../../core/store/memo-store.service';
+import { CardStateLabel, StudyMode } from '../../../core/study/interfaces';
 import { StudyService } from '../../../core/study/study.service';
 import { ToastService } from '../../../core/toast/toast.service';
 import { formatCount } from '../../../core/utils/format';
@@ -42,6 +44,7 @@ export class DeckDetailComponent {
 
   private readonly store = inject(MemoStore);
   private readonly study = inject(StudyService);
+  private readonly speech = inject(SpeechService);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly telegram = inject(TelegramService);
@@ -54,6 +57,8 @@ export class DeckDetailComponent {
   readonly query = this.queryState.asReadonly();
   readonly isDeckMenuOpen = this.deckMenuOpenState.asReadonly();
   readonly cardMenuTarget = this.cardMenuState.asReadonly();
+  readonly canSpeak = this.speech.isAvailable();
+  readonly speakingText = this.speech.speakingText;
 
   readonly deck = computed(() => this.store.getDeckById(this.deckId()));
   readonly stats = computed(() => this.store.getDeckStats(this.deckId()));
@@ -75,24 +80,27 @@ export class DeckDetailComponent {
 
   readonly deckMenuOptions = computed<readonly ActionSheetOption<DeckMenuAction>[]>(
     () => [
-      { id: 'study', label: 'Учить колоду', icon: 'play' },
-      { id: 'edit', label: 'Редактировать', icon: 'pencil' },
+      { id: 'edit', label: 'Изменить', icon: 'pencil' },
       {
         id: 'toggle-active',
         label: this.deck()?.isActive
-          ? 'Убрать из общего повторения'
-          : 'Вернуть в общее повторение',
+          ? 'Убрать из Drilling list'
+          : 'Добавить в Drilling list',
         icon: this.deck()?.isActive ? 'eye-off' : 'eye',
       },
+      { id: 'reset-all', label: 'Сбросить прогресс всех карточек', icon: 'rotate-ccw' },
       { id: 'delete', label: 'Удалить колоду', icon: 'trash', destructive: true },
     ]
   );
 
-  readonly cardMenuOptions: readonly ActionSheetOption<CardMenuAction>[] = [
+  readonly cardMenuOptions = computed<readonly ActionSheetOption<CardMenuAction>[]>(() => [
+    ...(this.canSpeak
+      ? [{ id: 'speak' as const, label: 'Озвучить вопрос', icon: 'volume' as const }]
+      : []),
     { id: 'edit', label: 'Редактировать', icon: 'pencil' },
     { id: 'reset', label: 'Сбросить прогресс', icon: 'rotate-ccw' },
     { id: 'delete', label: 'Удалить карточку', icon: 'trash', destructive: true },
-  ];
+  ]);
 
   setQuery(value: string): void {
     this.queryState.set(value);
@@ -124,9 +132,23 @@ export class DeckDetailComponent {
     void this.router.navigate(['/decks', this.deckId(), 'cards', card.id]);
   }
 
-  startStudy(): void {
-    void this.router.navigate(['/drilling/session'], {
-      queryParams: { deckId: this.deckId() },
+  describe(card: Card): CardStateLabel {
+    return this.study.describeState(card, this.store.now());
+  }
+
+  isSpeaking(card: Card): boolean {
+    return this.speakingText() === card.question.trim();
+  }
+
+  speak(card: Card): void {
+    this.speech.toggle(card.question);
+  }
+
+  /** «Тренировать» (Dremo) или «Memo» — на экран тренировки с этой колодой. */
+  train(mode: StudyMode): void {
+    this.telegram.hapticImpact('medium');
+    void this.router.navigate(['/drilling'], {
+      queryParams: { deckId: this.deckId(), mode: mode === 'dremo' ? null : mode },
     });
   }
 
@@ -138,7 +160,10 @@ export class DeckDetailComponent {
     }
     switch (action as DeckMenuAction) {
       case 'study':
-        this.startStudy();
+        this.train('dremo');
+        return;
+      case 'memo':
+        this.train('memo');
         return;
       case 'edit':
         await this.router.navigate(['/decks', deck.id, 'edit']);
@@ -146,9 +171,21 @@ export class DeckDetailComponent {
       case 'toggle-active':
         await this.store.setDeckActive(deck.id, !deck.isActive);
         this.toast.show(
-          deck.isActive ? 'Колода на паузе' : 'Колода снова в повторении'
+          deck.isActive ? 'Колода убрана из Drilling list' : 'Колода добавлена в Drilling list'
         );
         return;
+      case 'reset-all': {
+        const confirmed = await this.telegram.showConfirm(
+          `Сбросить прогресс всех карточек колоды «${deck.title}»? Они снова станут новыми.`
+        );
+        if (!confirmed) {
+          return;
+        }
+        await this.store.resetDeckProgress(deck.id);
+        this.telegram.hapticNotification('success');
+        this.toast.show('Прогресс колоды сброшен');
+        return;
+      }
       case 'delete': {
         const confirmed = await this.telegram.showConfirm(
           `Удалить колоду «${deck.title}» и все её карточки?`
@@ -172,6 +209,9 @@ export class DeckDetailComponent {
       return;
     }
     switch (action as CardMenuAction) {
+      case 'speak':
+        this.speech.speak(card.question);
+        return;
       case 'edit':
         this.openCard(card);
         return;

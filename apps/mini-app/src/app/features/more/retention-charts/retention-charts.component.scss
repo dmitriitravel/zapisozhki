@@ -1,0 +1,64 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chart {
+  padding: 14px 14px 8px;
+}
+
+.chart__title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.chart__text {
+  margin: 4px 0 8px;
+  font-size: 13px;
+}
+
+.chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.grid {
+  stroke: var(--memo-divider);
+  stroke-width: 1;
+}
+
+.mark {
+  stroke: var(--memo-hint);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.7;
+}
+
+.label {
+  fill: var(--memo-hint);
+  font-size: 10px;
+}
+
+.line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.line--accent {
+  stroke: var(--memo-accent);
+}
+
+.line--success {
+  stroke: var(--memo-success);
+}
+
+.dot {
+  fill: var(--memo-accent);
+  stroke: var(--memo-section-bg);
+  stroke-width: 2;
+}
