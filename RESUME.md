@@ -1,7 +1,19 @@
-# Точка возобновления — облачная синхронизация (2026-10-21)
+# Точка возобновления — публикация (2026-10-22)
 
-Работа прервана по просьбе пользователя. Код сохранён локальным коммитом,
-**ничего не запушено** (нет доступа к GitHub).
+Код запушен в `https://github.com/dmitriitravel/zapisozhki` (ветка `main`).
+Supabase `qwzvymlxpuptdwudfeuf`: миграция применена, функции `telegram-auth` и
+`telegram-bot` задеплоены, секреты функций заданы, публичная регистрация выключена.
+GitHub Actions: lint и тесты зелёные, job `supabase` зелёный.
+
+Не готово: GitHub Pages. Сайт ни разу не создавался, а токен не может создать его
+(`Resource not accessible`). Владелец должен один раз открыть
+Settings → Pages → Source: GitHub Actions. После этого перезапустить job `pages`
+(`enablement: true` уже в workflow). Затем `tools/telegram-setup.mjs` с
+`SUPABASE_URL=https://qwzvymlxpuptdwudfeuf.supabase.co`.
+
+Секреты Actions уже записаны: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`,
+`TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`. Переменные: `SUPABASE_PROJECT_REF`,
+`WEB_APP_URL`. В git их нет.
 
 ## Что сделано и зафиксировано
 
