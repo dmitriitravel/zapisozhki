@@ -68,6 +68,12 @@ jobs:
   pages:
     needs: checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+      # Создание сайта Pages в первый раз требует administration, не только pages.
+      administration: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
