@@ -105,6 +105,18 @@ npx nx build mini-app --base-href /memo/
 Загрузите содержимое `dist/apps/mini-app/browser` на хостинг. Роутинг в приложении
 hash‑based (`/#/decks`), поэтому fallback на `index.html` настраивать не нужно.
 
+Пуш в `main` запускает `.github/workflows/deploy.yml`: lint и тесты, затем миграции
+и Edge Functions в Supabase (если задана переменная `SUPABASE_PROJECT_REF`) и выкладку
+на GitHub Pages по адресу `https://<user>.github.io/<repo>/`. Секреты Actions:
+`SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `TELEGRAM_BOT_TOKEN`,
+`TELEGRAM_WEBHOOK_SECRET`. Переменные: `SUPABASE_PROJECT_REF`, `WEB_APP_URL`.
+Публичный URL и publishable key лежат в `apps/mini-app/src/environments/environment.ts`.
+После первого деплоя функций вебхук бота ставится так:
+
+```bash
+SUPABASE_URL=https://<ref>.supabase.co node --env-file=supabase/functions/.env tools/telegram-setup.mjs
+```
+
 Для локальной проверки прямо в Telegram можно пробросить dev-сервер через туннель
 (например, `ngrok http 4200` или `cloudflared tunnel --url http://localhost:4200`) и
 использовать выданный HTTPS‑адрес.
